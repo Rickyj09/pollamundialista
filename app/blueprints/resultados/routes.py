@@ -1,9 +1,10 @@
 from flask import render_template, request
 from app.blueprints.resultados import resultados_bp
-from app.models import JornadaGrupo, Apuesta
+from app.models import JornadaGrupo, Apuesta, PozoAcumulado
 from sqlalchemy import func
 from app.extensions import db
 from app.models import Usuario
+
 
 @resultados_bp.route("/")
 def tabla():
@@ -50,4 +51,10 @@ def ranking_general():
         .all()
     )
 
-    return render_template("resultados/general.html", ranking=ranking)
+    pozo_final = PozoAcumulado.query.filter_by(estado="activo").first()
+
+    return render_template(
+        "resultados/general.html",
+        ranking=ranking,
+        pozo_final=pozo_final
+    )

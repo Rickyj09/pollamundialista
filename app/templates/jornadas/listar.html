@@ -15,9 +15,12 @@
                     <th>Jornada</th>
                     <th>Nombre</th>
                     <th>Valor</th>
+                    <th>Jugadores</th>
+                    <th>Pozo total</th>
+                    <th>Premio</th>
+                    <th>Acumulado</th>
                     <th>Fecha cierre</th>
                     <th>Estado</th>
-                    <th>Partidos</th>
                     <th>Acción</th>
                 </tr>
             </thead>
@@ -28,6 +31,10 @@
                     <td>{{ jornada.numero_jornada }}</td>
                     <td>{{ jornada.nombre }}</td>
                     <td>${{ "%.2f"|format(jornada.valor_apuesta|float) }}</td>
+                    <td>{{ jornada.total_jugadores_confirmados }}</td>
+                    <td>${{ "%.2f"|format(jornada.pozo_total|float) }}</td>
+                    <td>${{ "%.2f"|format(jornada.pozo_premio|float) }}</td>
+                    <td>${{ "%.2f"|format(jornada.pozo_acumulado|float) }}</td>
                     <td>{{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}</td>
                     <td>
                         {% if jornada.estado == "abierta" %}
@@ -36,15 +43,10 @@
                             <span class="badge badge-closed">{{ jornada.estado }}</span>
                         {% endif %}
                     </td>
-                    <td>{{ jornada.partidos|length }}</td>
                     <td>
-                        {% if current_user.is_authenticated %}
-    <a class="btn btn-primary" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">
-        Apostar
-    </a>
-{% else %}
-    <span class="muted">Login requerido</span>
-{% endif %}
+                        <a class="btn btn-primary" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">
+                            Apostar
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}

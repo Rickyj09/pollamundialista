@@ -6,6 +6,13 @@ from app.extensions import db
 from app.utils.puntos import calcular_puntos_pronostico
 from datetime import datetime
 
+from app.utils.pozo import (
+    recalcular_pozo_jornada,
+    detectar_ganador_jornada,
+    mover_acumulado_jornada,
+    jornada_completa_y_calculada,
+)
+
 
 def recalcular_ranking_jornada(jornada_id):
     apuestas = (
@@ -203,9 +210,13 @@ def confirmar_pago(pago_id):
     pago.fecha_confirmacion = datetime.utcnow()
     pago.confirmado_por_id = current_user.id
 
+    db.session.flush()
+
+    recalcular_pozo_jornada(pago.jornada_grupo_id)
+
     db.session.commit()
 
-    flash("Pago confirmado correctamente.", "success")
+    flash("Pago confirmado y pozo recalculado correctamente.", "success")
     return redirect(url_for("admin.listar_pagos"))
 
 @admin_bp.route("/partidos")
@@ -242,7 +253,17 @@ def ingresar_resultado(partido_id):
 
         recalcular_puntos_partido(partido.id)
 
-        flash("Resultado guardado y puntos recalculados correctamente.", "success")
+        jornada = partido.jornada_grupo
+        recalcular_pozo_jornada(jornada.id)
+
+        if jornada_completa_y_calculada(jornada):
+            detectar_ganador_jornada(jornada.id)
+            mover_acumulado_jornada(jornada.id)
+            jornada.estado = "liquidada"
+
+        db.session.commit()
+
+        flash("Resultado guardado, puntos recalculados y jornada actualizada.", "success")
         return redirect(url_for("admin.listar_partidos"))
 
     return render_template("admin/partido_resultado.html", partido=partido)

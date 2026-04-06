@@ -19,8 +19,46 @@
 </form>
 
 {% if jornada_seleccionada %}
-    <h3>{{ jornada_seleccionada.nombre }}</h3>
 
+    <h3 style="margin-top: 20px;">{{ jornada_seleccionada.nombre }}</h3>
+
+    <!-- 💰 RESUMEN FINANCIERO -->
+    <div class="actions" style="margin-bottom: 16px; gap:10px;">
+        <span class="badge badge-open">
+            👥 Jugadores: {{ jornada_seleccionada.total_jugadores_confirmados }}
+        </span>
+
+        <span class="badge badge-open">
+            💰 Pozo: ${{ "%.2f"|format(jornada_seleccionada.pozo_total|float) }}
+        </span>
+
+        <span class="badge badge-open">
+            🏆 Premio: ${{ "%.2f"|format(jornada_seleccionada.pozo_premio|float) }}
+        </span>
+
+        <span class="badge badge-open">
+            📈 Acumulado: ${{ "%.2f"|format(jornada_seleccionada.pozo_acumulado|float) }}
+        </span>
+    </div>
+
+    <!-- 🏆 GANADOR -->
+    <div style="margin-bottom: 18px;">
+        {% if jornada_seleccionada.estado_ganador == "definido" and jornada_seleccionada.ganador_apuesta %}
+            <span class="badge badge-open">
+                🥇 Ganador: {{ jornada_seleccionada.ganador_apuesta.usuario.nombre_completo() }}
+            </span>
+        {% elif jornada_seleccionada.estado_ganador == "empatado" %}
+            <span class="badge badge-warning">
+                ⚖️ Empate en la jornada
+            </span>
+        {% else %}
+            <span class="badge badge-closed">
+                ⏳ Ganador pendiente
+            </span>
+        {% endif %}
+    </div>
+
+    <!-- 📊 TABLA DE RESULTADOS -->
     {% if apuestas %}
         <div class="table-wrap">
             <table>
@@ -35,10 +73,31 @@
                 <tbody>
                     {% for apuesta in apuestas %}
                     <tr>
-                        <td>{{ apuesta.posicion if apuesta.posicion else "-" }}</td>
+                        <td>
+                            {% if apuesta.posicion == 1 %}
+                                🥇 {{ apuesta.posicion }}
+                            {% elif apuesta.posicion == 2 %}
+                                🥈 {{ apuesta.posicion }}
+                            {% elif apuesta.posicion == 3 %}
+                                🥉 {{ apuesta.posicion }}
+                            {% else %}
+                                {{ apuesta.posicion if apuesta.posicion else "-" }}
+                            {% endif %}
+                        </td>
+
                         <td>{{ apuesta.usuario.nombre_completo() }}</td>
-                        <td>{{ apuesta.puntos_total }}</td>
-                        <td>{{ apuesta.estado_pago }}</td>
+
+                        <td>
+                            <strong>{{ apuesta.puntos_total }}</strong>
+                        </td>
+
+                        <td>
+                            {% if apuesta.estado_pago == "pagado" %}
+                                <span class="badge badge-open">Pagado</span>
+                            {% else %}
+                                <span class="badge badge-warning">Pendiente</span>
+                            {% endif %}
+                        </td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -47,5 +106,7 @@
     {% else %}
         <p>No hay apuestas registradas para esta jornada.</p>
     {% endif %}
+
 {% endif %}
+
 {% endblock %}

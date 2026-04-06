@@ -53,8 +53,9 @@ class Apuesta(db.Model):
     )
 
     jornada_grupo = db.relationship(
-        "JornadaGrupo",
-        backref=db.backref("apuestas", lazy=True)
+    "JornadaGrupo",
+    backref="apuestas",
+    foreign_keys=[jornada_grupo_id]
     )
 
     __table_args__ = (
