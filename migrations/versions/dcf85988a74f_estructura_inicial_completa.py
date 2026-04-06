@@ -1,8 +1,8 @@
-"""estructura limpia con pozo
+"""estructura inicial completa
 
-Revision ID: 632c343d27ac
+Revision ID: dcf85988a74f
 Revises: 
-Create Date: 2026-04-06 14:01:52.099912
+Create Date: 2026-04-06 14:47:16.851154
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '632c343d27ac'
+revision = 'dcf85988a74f'
 down_revision = None
 branch_labels = None
 depends_on = None
