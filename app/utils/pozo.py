@@ -21,7 +21,7 @@ def recalcular_pozo_jornada(jornada_id):
     jornada.total_jugadores_confirmados = pagos_confirmados
     jornada.pozo_total = pagos_confirmados * valor_apuesta
     jornada.pozo_premio = pagos_confirmados * valor_premio_unitario
-    jornada.pozo_acumulado = pagos_confirmados * valor_acumulado_unitaria
+    jornada.pozo_acumulado = pagos_confirmados * valor_acumulado_unitario
     jornada.pozo_utilidad = pagos_confirmados * valor_utilidad_unitaria
 
     db.session.flush()
