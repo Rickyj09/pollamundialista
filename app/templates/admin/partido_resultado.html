@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Ingresar resultado{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Ingresar resultado</h2>
+
+<p><strong>{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</strong></p>
+<p class="muted">
+    Grupo {{ partido.grupo.nombre }} ·
+    Jornada {{ partido.jornada_grupo.numero_jornada }} ·
+    {{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}
+</p>
+
+<form method="POST">
+    <div class="grid-2">
+        <div class="form-group">
+            <label>{{ partido.equipo_local.nombre }}</label>
+            <input type="number" name="goles_local" min="0" required value="{{ partido.goles_local if partido.goles_local is not none else '' }}">
+        </div>
+
+        <div class="form-group">
+            <label>{{ partido.equipo_visitante.nombre }}</label>
+            <input type="number" name="goles_visitante" min="0" required value="{{ partido.goles_visitante if partido.goles_visitante is not none else '' }}">
+        </div>
+    </div>
+
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Guardar resultado</button>
+        <a href="{{ url_for('admin.listar_partidos') }}" class="btn btn-secondary">Volver</a>
+    </div>
+</form>
+{% endblock %}

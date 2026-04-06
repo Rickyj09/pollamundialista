@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Ranking general{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Ranking general</h2>
+<p class="muted">Puntaje acumulado total de todos los jugadores.</p>
+
+{% if ranking %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Posición</th>
+                    <th>Jugador</th>
+                    <th>Puntos acumulados</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in ranking %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ fila.nombres }} {{ fila.apellidos or '' }}</td>
+                    <td>{{ fila.puntos }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>No hay datos acumulados todavía.</p>
+{% endif %}
+
+<div class="actions">
+    <a class="btn btn-secondary" href="{{ url_for('resultados.tabla') }}">Ver ranking por jornada</a>
+</div>
+{% endblock %}

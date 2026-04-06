@@ -321,7 +321,7 @@
             <a class="nav-link" href="{{ url_for('jornadas.listar') }}">Jornadas</a>
             <a class="nav-link" href="{{ url_for('apuestas.mis_apuestas') }}">Mis apuestas</a>
             <a class="nav-link" href="{{ url_for('resultados.tabla') }}">Resultados</a>
-
+             <a class="btn btn-secondary" href="{{ url_for('resultados.ranking_general') }}">Ranking general</a>
             {% if current_user.es_admin %}
                 <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a>
             {% endif %}

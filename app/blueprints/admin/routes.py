@@ -1,10 +1,68 @@
 from flask import render_template, request, redirect, url_for, flash, abort
 from flask_login import login_required, current_user
 from app.blueprints.admin import admin_bp
+from app.models import JornadaGrupo, Usuario, PagoJornada, Partido, Apuesta, Pronostico
 from app.extensions import db
-from app.models import JornadaGrupo, Usuario, PagoJornada
+from app.utils.puntos import calcular_puntos_pronostico
 from datetime import datetime
 
+
+def recalcular_ranking_jornada(jornada_id):
+    apuestas = (
+        Apuesta.query
+        .filter_by(jornada_grupo_id=jornada_id)
+        .order_by(Apuesta.puntos_total.desc(), Apuesta.id.asc())
+        .all()
+    )
+
+    posicion = 1
+    for apuesta in apuestas:
+        apuesta.posicion = posicion
+        posicion += 1
+
+    db.session.commit()
+
+def recalcular_puntos_partido(partido_id):
+    partido = Partido.query.get(partido_id)
+    if not partido:
+        return
+
+    if partido.goles_local is None or partido.goles_visitante is None:
+        return
+
+    pronosticos = Pronostico.query.filter_by(partido_id=partido.id).all()
+
+    apuesta_ids_afectadas = set()
+
+    for pronostico in pronosticos:
+        puntos = calcular_puntos_pronostico(
+            partido.goles_local,
+            partido.goles_visitante,
+            pronostico.goles_local_pred,
+            pronostico.goles_visitante_pred
+        )
+        pronostico.puntos_obtenidos = puntos
+        apuesta_ids_afectadas.add(pronostico.apuesta_id)
+
+    db.session.flush()
+
+    for apuesta_id in apuesta_ids_afectadas:
+        apuesta = Apuesta.query.get(apuesta_id)
+        if not apuesta:
+            continue
+
+        total = 0
+        for p in apuesta.pronosticos:
+            total += p.puntos_obtenidos
+
+        apuesta.puntos_total = total
+
+    db.session.commit()
+
+    for apuesta_id in apuesta_ids_afectadas:
+        apuesta = Apuesta.query.get(apuesta_id)
+        if apuesta:
+            recalcular_ranking_jornada(apuesta.jornada_grupo_id)
 
 def admin_required():
     if not current_user.is_authenticated or not current_user.es_admin:
@@ -149,3 +207,42 @@ def confirmar_pago(pago_id):
 
     flash("Pago confirmado correctamente.", "success")
     return redirect(url_for("admin.listar_pagos"))
+
+@admin_bp.route("/partidos")
+@login_required
+def listar_partidos():
+    admin_required()
+    partidos = (
+        Partido.query
+        .order_by(Partido.fecha_partido.asc(), Partido.numero_calendario.asc())
+        .all()
+    )
+    return render_template("admin/partidos_listar.html", partidos=partidos)
+
+
+@admin_bp.route("/partidos/<int:partido_id>/resultado", methods=["GET", "POST"])
+@login_required
+def ingresar_resultado(partido_id):
+    admin_required()
+    partido = Partido.query.get_or_404(partido_id)
+
+    if request.method == "POST":
+        goles_local = request.form.get("goles_local", type=int)
+        goles_visitante = request.form.get("goles_visitante", type=int)
+
+        if goles_local is None or goles_visitante is None:
+            flash("Debes ingresar ambos marcadores.", "danger")
+            return redirect(url_for("admin.ingresar_resultado", partido_id=partido.id))
+
+        partido.goles_local = goles_local
+        partido.goles_visitante = goles_visitante
+        partido.estado = "jugado"
+
+        db.session.commit()
+
+        recalcular_puntos_partido(partido.id)
+
+        flash("Resultado guardado y puntos recalculados correctamente.", "success")
+        return redirect(url_for("admin.listar_partidos"))
+
+    return render_template("admin/partido_resultado.html", partido=partido)

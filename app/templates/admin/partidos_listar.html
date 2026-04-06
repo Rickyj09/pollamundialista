@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Partidos{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Partidos y resultados</h2>
+<p class="muted">Ingresa resultados reales para calcular automáticamente los puntos.</p>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Grupo</th>
+                <th>Jornada</th>
+                <th>Partido</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Resultado</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for partido in partidos %}
+            <tr>
+                <td>{{ partido.id }}</td>
+                <td>{{ partido.grupo.nombre }}</td>
+                <td>{{ partido.jornada_grupo.numero_jornada }}</td>
+                <td>{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</td>
+                <td>{{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}</td>
+                <td>{{ partido.estado }}</td>
+                <td>
+                    {% if partido.goles_local is not none and partido.goles_visitante is not none %}
+                        <strong>{{ partido.goles_local }} - {{ partido.goles_visitante }}</strong>
+                    {% else %}
+                        Pendiente
+                    {% endif %}
+                </td>
+                <td>
+                    <a class="btn btn-primary" href="{{ url_for('admin.ingresar_resultado', partido_id=partido.id) }}">
+                        Cargar resultado
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

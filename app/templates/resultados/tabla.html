@@ -3,5 +3,49 @@
 {% block title %}Resultados{% endblock %}
 
 {% block content %}
-<h1>Tabla de posiciones</h1>
+<h2 class="page-title">Ranking por jornada</h2>
+<p class="muted">Consulta la clasificación de cada jornada de grupo.</p>
+
+<form method="GET" class="form-group">
+    <label for="jornada_id">Selecciona una jornada</label>
+    <select name="jornada_id" id="jornada_id" onchange="this.form.submit()">
+        <option value="">Seleccione</option>
+        {% for jornada in jornadas %}
+            <option value="{{ jornada.id }}" {% if jornada_seleccionada and jornada.id == jornada_seleccionada.id %}selected{% endif %}>
+                {{ jornada.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+{% if jornada_seleccionada %}
+    <h3>{{ jornada_seleccionada.nombre }}</h3>
+
+    {% if apuestas %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Posición</th>
+                        <th>Jugador</th>
+                        <th>Puntos</th>
+                        <th>Pago</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apuesta in apuestas %}
+                    <tr>
+                        <td>{{ apuesta.posicion if apuesta.posicion else "-" }}</td>
+                        <td>{{ apuesta.usuario.nombre_completo() }}</td>
+                        <td>{{ apuesta.puntos_total }}</td>
+                        <td>{{ apuesta.estado_pago }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p>No hay apuestas registradas para esta jornada.</p>
+    {% endif %}
+{% endif %}
 {% endblock %}
