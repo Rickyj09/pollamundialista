@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Mis apuestas{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Apuestas registradas</h2>
+<p class="muted">Aquí puedes revisar tus apuestas y editar las que aún estén dentro del tiempo permitido.</p>
+
+{% if apuestas %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Jugador</th>
+                    <th>Grupo</th>
+                    <th>Jornada</th>
+                    <th>Valor</th>
+                    <th>Pago</th>
+                    <th>Puntos</th>
+                    <th>Pronósticos</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for apuesta in apuestas %}
+                <tr>
+                    <td>{{ apuesta.id }}</td>
+                    <td>{{ apuesta.usuario.nombre_completo() }}</td>
+                    <td>{{ apuesta.jornada_grupo.grupo.nombre }}</td>
+                    <td>{{ apuesta.jornada_grupo.numero_jornada }}</td>
+                    <td>${{ "%.2f"|format(apuesta.valor_apostado|float) }}</td>
+                    <td>{{ apuesta.estado_pago }}</td>
+                    <td>{{ apuesta.puntos_total }}</td>
+                    <td>
+                        {% for pronostico in apuesta.pronosticos %}
+                            <div>
+                                {{ pronostico.partido.equipo_local.nombre }}
+                                <strong>{{ pronostico.goles_local_pred }} - {{ pronostico.goles_visitante_pred }}</strong>
+                                {{ pronostico.partido.equipo_visitante.nombre }}
+                            </div>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        {% if apuesta.jornada_grupo.estado == "abierta" %}
+                            <a class="btn btn-warning" href="{{ url_for('apuestas.editar_apuesta', apuesta_id=apuesta.id) }}">
+                                Editar
+                            </a>
+                        {% else %}
+                            <span class="muted">Cerrada</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>No hay apuestas registradas.</p>
+{% endif %}
+{% endblock %}

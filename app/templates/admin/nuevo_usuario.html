@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo usuario{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Nuevo usuario</h2>
+
+<form method="POST">
+    <div class="form-group">
+        <label>Nombres</label>
+        <input type="text" name="nombres" required>
+    </div>
+
+    <div class="form-group">
+        <label>Apellidos</label>
+        <input type="text" name="apellidos">
+    </div>
+
+    <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" required>
+    </div>
+
+    <div class="form-group">
+        <label>Celular</label>
+        <input type="text" name="celular">
+    </div>
+
+    <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" name="password" required>
+    </div>
+
+    <div class="form-group">
+        <label>
+            <input type="checkbox" name="es_admin">
+            Es administrador
+        </label>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-primary" type="submit">Guardar usuario</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.listar_usuarios') }}">Volver</a>
+    </div>
+</form>
+{% endblock %}

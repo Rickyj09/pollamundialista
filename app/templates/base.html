@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Polla Mundialista{% endblock %}</title>
+
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --card: #ffffff;
+            --primary: #0f172a;
+            --secondary: #334155;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --success: #15803d;
+            --warning: #b45309;
+            --danger: #b91c1c;
+            --muted: #64748b;
+            --border: #dbe3ee;
+            --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--bg);
+            color: var(--primary);
+        }
+
+        .topbar {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 18px 0;
+            box-shadow: var(--shadow);
+        }
+
+        .container {
+            width: min(1100px, 92%);
+            margin: 0 auto;
+        }
+
+        .brand {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .brand-title {
+            font-size: 1.7rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .brand-subtitle {
+            font-size: 0.95rem;
+            color: #dbeafe;
+            margin: 0;
+        }
+
+        .navbar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 14px 0;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--secondary);
+            font-weight: 600;
+            padding: 10px 14px;
+            border-radius: 12px;
+            transition: 0.2s ease;
+        }
+
+        .nav-link:hover {
+            background: #eff6ff;
+            color: var(--accent);
+        }
+
+        .page {
+            padding: 26px 0 40px;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            padding: 24px;
+        }
+
+        .page-title {
+            margin: 0 0 18px;
+            font-size: 2rem;
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--secondary);
+            font-size: 0.95rem;
+        }
+
+        tr:hover td {
+            background: #f8fbff;
+        }
+
+        .btn {
+            display: inline-block;
+            text-decoration: none;
+            border: none;
+            border-radius: 12px;
+            padding: 10px 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        .badge-open {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .badge-closed {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .match-card {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            background: #fcfdff;
+        }
+
+        .match-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .match-meta {
+            font-size: 0.95rem;
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
+
+        .score-row {
+            display: grid;
+            grid-template-columns: 1fr 90px 1fr 90px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="number"], select {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-size: 1rem;
+            background: white;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 700;
+            color: var(--secondary);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 22px;
+        }
+
+        .flash-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 18px;
+        }
+
+        .flash {
+            padding: 14px 16px;
+            border-radius: 14px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .flash-success {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .flash-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .flash-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .flash-info {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .score-row {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 1.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="container">
+            <div class="brand">
+                <h1 class="brand-title">Polla Mundialista</h1>
+                <p class="brand-subtitle">Pronósticos por jornada, acumulado final y control de apuestas</p>
+            </div>
+        </div>
+    </header>
+
+    <nav class="navbar">
+    <div class="container nav-inner">
+
+        <a class="nav-link" href="{{ url_for('public.home') }}">Inicio</a>
+
+        {% if current_user.is_authenticated %}
+            <a class="nav-link" href="{{ url_for('jornadas.listar') }}">Jornadas</a>
+            <a class="nav-link" href="{{ url_for('apuestas.mis_apuestas') }}">Mis apuestas</a>
+            <a class="nav-link" href="{{ url_for('resultados.tabla') }}">Resultados</a>
+
+            {% if current_user.es_admin %}
+                <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a>
+            {% endif %}
+
+            <span class="nav-link" style="margin-left:auto;">
+                👤 {{ current_user.nombre_completo() }}
+            </span>
+
+            <a class="nav-link" href="{{ url_for('auth.logout') }}">Salir</a>
+
+        {% else %}
+            <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+        {% endif %}
+
+    </div>
+</nav>
+
+    <main class="page">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <ul class="flash-list">
+                        {% for category, message in messages %}
+                            <li class="flash flash-{{ category }}">{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endwith %}
+
+            <div class="card">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>

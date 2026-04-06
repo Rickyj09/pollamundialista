@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Pagos{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Pagos por jornada</h2>
+
+<div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('admin.nuevo_pago') }}">Nuevo pago</a>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Jugador</th>
+                <th>Jornada</th>
+                <th>Valor</th>
+                <th>Método</th>
+                <th>Referencia</th>
+                <th>Estado</th>
+                <th>Confirmado por</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pago in pagos %}
+            <tr>
+                <td>{{ pago.id }}</td>
+                <td>{{ pago.usuario.nombre_completo() }}</td>
+                <td>{{ pago.jornada_grupo.nombre }}</td>
+                <td>${{ "%.2f"|format(pago.valor|float) }}</td>
+                <td>{{ pago.metodo_pago or "" }}</td>
+                <td>{{ pago.referencia or "" }}</td>
+                <td>{{ pago.estado }}</td>
+                <td>{{ pago.confirmado_por.nombre_completo() if pago.confirmado_por else "" }}</td>
+                <td>
+                    {% if pago.estado != "confirmado" %}
+                        <a class="btn btn-warning" href="{{ url_for('admin.confirmar_pago', pago_id=pago.id) }}">Confirmar</a>
+                    {% else %}
+                        <span class="muted">Confirmado</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

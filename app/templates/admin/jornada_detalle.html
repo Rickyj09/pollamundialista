@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de jornada{% endblock %}
+
+{% block content %}
+<h1>{{ jornada.nombre }}</h1>
+
+<p><strong>Grupo:</strong> {{ jornada.grupo.nombre }}</p>
+<p><strong>Jornada:</strong> {{ jornada.numero_jornada }}</p>
+<p><strong>Valor apuesta:</strong> ${{ "%.2f"|format(jornada.valor_apuesta) }}</p>
+<p><strong>Premio jornada:</strong> ${{ "%.2f"|format(jornada.valor_premio_jornada) }}</p>
+<p><strong>Aporte acumulado:</strong> ${{ "%.2f"|format(jornada.valor_acumulado) }}</p>
+<p><strong>Utilidad:</strong> ${{ "%.2f"|format(jornada.valor_utilidad) }}</p>
+<p><strong>Fecha cierre:</strong> {{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}</p>
+<p><strong>Estado:</strong> {{ jornada.estado }}</p>
+
+<h2>Partidos</h2>
+
+{% if partidos %}
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>N° calendario</th>
+                <th>Fecha</th>
+                <th>Hora EST</th>
+                <th>Hora local</th>
+                <th>Local</th>
+                <th>Visitante</th>
+                <th>Estadio</th>
+                <th>Ciudad</th>
+                <th>Estado</th>
+                <th>Resultado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for partido in partidos %}
+            <tr>
+                <td>{{ partido.id }}</td>
+                <td>{{ partido.numero_calendario }}</td>
+                <td>{{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}</td>
+                <td>{{ partido.hora_est or "" }}</td>
+                <td>{{ partido.hora_local or "" }}</td>
+                <td>{{ partido.equipo_local.nombre }}</td>
+                <td>{{ partido.equipo_visitante.nombre }}</td>
+                <td>{{ partido.estadio or "" }}</td>
+                <td>{{ partido.ciudad or "" }}</td>
+                <td>{{ partido.estado }}</td>
+                <td>
+                    {% if partido.goles_local is not none and partido.goles_visitante is not none %}
+                        {{ partido.goles_local }} - {{ partido.goles_visitante }}
+                    {% else %}
+                        Pendiente
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>Esta jornada no tiene partidos cargados.</p>
+{% endif %}
+
+<p>
+    <a href="{{ url_for('admin.listar_jornadas') }}">Volver al listado</a>
+</p>
+{% endblock %}

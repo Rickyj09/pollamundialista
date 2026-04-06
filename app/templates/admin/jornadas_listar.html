@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Jornadas cargadas{% endblock %}
+
+{% block content %}
+<h1>Jornadas cargadas</h1>
+
+{% if jornadas %}
+    <table border="1" cellpadding="8" cellspacing="0">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Grupo</th>
+                <th>Jornada</th>
+                <th>Nombre</th>
+                <th>Valor apuesta</th>
+                <th>Fecha cierre</th>
+                <th>Estado</th>
+                <th>Partidos</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for jornada in jornadas %}
+            <tr>
+                <td>{{ jornada.id }}</td>
+                <td>{{ jornada.grupo.nombre }}</td>
+                <td>{{ jornada.numero_jornada }}</td>
+                <td>{{ jornada.nombre }}</td>
+                <td>${{ "%.2f"|format(jornada.valor_apuesta) }}</td>
+                <td>{{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}</td>
+                <td>{{ jornada.estado }}</td>
+                <td>{{ jornada.partidos|length }}</td>
+                <td>
+                    <a href="{{ url_for('admin.detalle_jornada', jornada_id=jornada.id) }}">
+                        Ver detalle
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No hay jornadas cargadas.</p>
+{% endif %}
+
+<p>
+    <a href="{{ url_for('admin.dashboard') }}">Volver al panel</a>
+</p>
+{% endblock %}

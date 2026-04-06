@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo pago{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Registrar pago por jornada</h2>
+
+<form method="POST">
+    <div class="form-group">
+        <label>Jugador</label>
+        <select name="usuario_id" required>
+            <option value="">Seleccione</option>
+            {% for usuario in usuarios %}
+                <option value="{{ usuario.id }}">{{ usuario.nombre_completo() }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Jornada</label>
+        <select name="jornada_id" required>
+            <option value="">Seleccione</option>
+            {% for jornada in jornadas %}
+                <option value="{{ jornada.id }}">{{ jornada.nombre }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Método de pago</label>
+        <input type="text" name="metodo_pago">
+    </div>
+
+    <div class="form-group">
+        <label>Referencia</label>
+        <input type="text" name="referencia">
+    </div>
+
+    <div class="form-group">
+        <label>Observación</label>
+        <input type="text" name="observacion">
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-primary" type="submit">Guardar pago</button>
+        <a class="btn btn-secondary" href="{{ url_for('admin.listar_pagos') }}">Volver</a>
+    </div>
+</form>
+{% endblock %}

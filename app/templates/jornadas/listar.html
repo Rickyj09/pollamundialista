@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block title %}Jornadas{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Jornadas disponibles</h2>
+<p class="muted">Selecciona una jornada de grupo para registrar tu pronóstico.</p>
+
+{% if jornadas %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Grupo</th>
+                    <th>Jornada</th>
+                    <th>Nombre</th>
+                    <th>Valor</th>
+                    <th>Fecha cierre</th>
+                    <th>Estado</th>
+                    <th>Partidos</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for jornada in jornadas %}
+                <tr>
+                    <td>{{ jornada.grupo.nombre }}</td>
+                    <td>{{ jornada.numero_jornada }}</td>
+                    <td>{{ jornada.nombre }}</td>
+                    <td>${{ "%.2f"|format(jornada.valor_apuesta|float) }}</td>
+                    <td>{{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}</td>
+                    <td>
+                        {% if jornada.estado == "abierta" %}
+                            <span class="badge badge-open">Abierta</span>
+                        {% else %}
+                            <span class="badge badge-closed">{{ jornada.estado }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ jornada.partidos|length }}</td>
+                    <td>
+                        {% if current_user.is_authenticated %}
+    <a class="btn btn-primary" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">
+        Apostar
+    </a>
+{% else %}
+    <span class="muted">Login requerido</span>
+{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>No hay jornadas cargadas.</p>
+{% endif %}
+{% endblock %}

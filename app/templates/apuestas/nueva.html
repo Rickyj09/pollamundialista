@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva apuesta{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Nueva apuesta</h2>
+
+<p><strong>{{ jornada.nombre }}</strong></p>
+<p class="muted">
+    Grupo {{ jornada.grupo.nombre }} · Jornada {{ jornada.numero_jornada }} ·
+    Valor ${{ "%.2f"|format(jornada.valor_apuesta|float) }} ·
+    Cierre {{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}
+</p>
+
+<form method="POST" action="{{ url_for('apuestas.guardar_apuesta', jornada_id=jornada.id) }}">
+    <div class="form-group">
+        <label>Jugador</label>
+        <input type="text" value="{{ current_user.nombre_completo() }}" readonly>
+    </div>
+
+    <div class="grid-2">
+        {% for partido in partidos %}
+        <div class="match-card">
+            <div class="match-title">{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</div>
+            <div class="match-meta">
+                {{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}
+                · EST {{ partido.hora_est or "" }}
+                · Local {{ partido.hora_local or "" }}<br>
+                {{ partido.estadio or "" }} - {{ partido.ciudad or "" }}
+            </div>
+
+            <div class="score-row">
+                <div>
+                    <label>{{ partido.equipo_local.nombre }}</label>
+                </div>
+                <div>
+                    <input type="number" name="goles_local_{{ partido.id }}" min="0" required>
+                </div>
+
+                <div>
+                    <label>{{ partido.equipo_visitante.nombre }}</label>
+                </div>
+                <div>
+                    <input type="number" name="goles_visitante_{{ partido.id }}" min="0" required>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="actions">
+        <button type="submit" class="btn btn-primary">Guardar apuesta</button>
+        <a href="{{ url_for('jornadas.listar') }}" class="btn btn-secondary">Volver</a>
+    </div>
+</form>
+{% endblock %}

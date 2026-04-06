@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Panel administrativo{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Panel administrativo</h2>
+<p class="muted">Gestiona jornadas, usuarios y pagos confirmados.</p>
+
+<div class="actions">
+    <a class="btn btn-primary" href="{{ url_for('admin.listar_jornadas') }}">Jornadas</a>
+    <a class="btn btn-primary" href="{{ url_for('admin.listar_usuarios') }}">Usuarios</a>
+    <a class="btn btn-primary" href="{{ url_for('admin.listar_pagos') }}">Pagos</a>
+</div>
+{% endblock %}
