@@ -5,12 +5,16 @@
 {% block content %}
 <h2 class="page-title">Nueva apuesta</h2>
 
-<p><strong>{{ jornada.nombre }}</strong></p>
-<p class="muted">
-    Grupo {{ jornada.grupo.nombre }} · Jornada {{ jornada.numero_jornada }} ·
-    Valor ${{ "%.2f"|format(jornada.valor_apuesta|float) }} ·
-    Cierre {{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}
-</p>
+<div style="margin-bottom: 18px;">
+    <div style="font-size: 1.1rem; font-weight: 700; margin-bottom: 6px;">
+        {{ jornada.nombre }}
+    </div>
+    <div class="muted" style="line-height: 1.5;">
+        Grupo {{ jornada.grupo.nombre }} · Jornada {{ jornada.numero_jornada }} ·
+        Valor ${{ "%.2f"|format(jornada.valor_apuesta|float) }} ·
+        Cierre {{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}
+    </div>
+</div>
 
 <form method="POST" action="{{ url_for('apuestas.guardar_apuesta', jornada_id=jornada.id) }}">
     <div class="form-group">
@@ -21,27 +25,47 @@
     <div class="grid-2">
         {% for partido in partidos %}
         <div class="match-card">
-            <div class="match-title">{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</div>
+            <div class="match-title">
+                {{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}
+            </div>
+
             <div class="match-meta">
                 {{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}
-                · EST {{ partido.hora_est or "" }}
-                · Local {{ partido.hora_local or "" }}<br>
-                {{ partido.estadio or "" }} - {{ partido.ciudad or "" }}
+                {% if partido.hora_est %} · EST {{ partido.hora_est }}{% endif %}
+                {% if partido.hora_local %} · Local {{ partido.hora_local }}{% endif %}
+                <br>
+                {{ partido.estadio or "" }}{% if partido.estadio and partido.ciudad %} - {% endif %}{{ partido.ciudad or "" }}
             </div>
 
             <div class="score-row">
                 <div>
-                    <label>{{ partido.equipo_local.nombre }}</label>
+                    <label for="goles_local_{{ partido.id }}">{{ partido.equipo_local.nombre }}</label>
                 </div>
                 <div>
-                    <input type="number" name="goles_local_{{ partido.id }}" min="0" required>
+                    <input
+                        id="goles_local_{{ partido.id }}"
+                        type="number"
+                        name="goles_local_{{ partido.id }}"
+                        min="0"
+                        required
+                        inputmode="numeric"
+                        placeholder="0"
+                    >
                 </div>
 
                 <div>
-                    <label>{{ partido.equipo_visitante.nombre }}</label>
+                    <label for="goles_visitante_{{ partido.id }}">{{ partido.equipo_visitante.nombre }}</label>
                 </div>
                 <div>
-                    <input type="number" name="goles_visitante_{{ partido.id }}" min="0" required>
+                    <input
+                        id="goles_visitante_{{ partido.id }}"
+                        type="number"
+                        name="goles_visitante_{{ partido.id }}"
+                        min="0"
+                        required
+                        inputmode="numeric"
+                        placeholder="0"
+                    >
                 </div>
             </div>
         </div>

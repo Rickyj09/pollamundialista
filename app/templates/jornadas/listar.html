@@ -7,7 +7,9 @@
 <p class="muted">Selecciona una jornada de grupo para registrar tu pronóstico.</p>
 
 {% if jornadas %}
-    <div class="table-wrap">
+
+    <!-- TABLA PARA ESCRITORIO -->
+    <div class="table-wrap desktop-only">
         <table>
             <thead>
                 <tr>
@@ -53,6 +55,69 @@
             </tbody>
         </table>
     </div>
+
+    <!-- CARDS PARA MÓVIL -->
+    <div class="mobile-stack-cards mobile-only">
+        {% for jornada in jornadas %}
+        <div class="mobile-card">
+            <div class="mobile-card-header">
+                <div>
+                    <h3 class="mobile-card-title">{{ jornada.nombre }}</h3>
+                    <div class="mobile-card-subtitle">
+                        {{ jornada.grupo.nombre }} · Jornada {{ jornada.numero_jornada }}
+                    </div>
+                </div>
+
+                <div>
+                    {% if jornada.estado == "abierta" %}
+                        <span class="badge badge-open">Abierta</span>
+                    {% else %}
+                        <span class="badge badge-closed">{{ jornada.estado }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mobile-data-grid">
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Valor</div>
+                    <div class="mobile-value">${{ "%.2f"|format(jornada.valor_apuesta|float) }}</div>
+                </div>
+
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Jugadores</div>
+                    <div class="mobile-value">{{ jornada.total_jugadores_confirmados }}</div>
+                </div>
+
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Pozo total</div>
+                    <div class="mobile-value">${{ "%.2f"|format(jornada.pozo_total|float) }}</div>
+                </div>
+
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Premio</div>
+                    <div class="mobile-value">${{ "%.2f"|format(jornada.pozo_premio|float) }}</div>
+                </div>
+
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Acumulado</div>
+                    <div class="mobile-value">${{ "%.2f"|format(jornada.pozo_acumulado|float) }}</div>
+                </div>
+
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Fecha cierre</div>
+                    <div class="mobile-value">
+                        {{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}
+                    </div>
+                </div>
+            </div>
+
+            <a class="btn btn-primary" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">
+                Apostar
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+
 {% else %}
     <p>No hay jornadas cargadas.</p>
 {% endif %}

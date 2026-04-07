@@ -70,9 +70,49 @@
 
         .nav-inner {
             display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 0;
+            position: relative;
+        }
+
+        .nav-toggle {
+            display: none;
+        }
+
+        .nav-toggle-label {
+            display: none;
+            width: 44px;
+            height: 44px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #fff;
+            color: var(--primary);
+            font-size: 1.25rem;
+            user-select: none;
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+
+        .nav-left,
+        .nav-right {
+            display: flex;
+            align-items: center;
             gap: 12px;
             flex-wrap: wrap;
-            padding: 14px 0;
+        }
+
+        .nav-right {
+            margin-left: auto;
         }
 
         .nav-link {
@@ -82,6 +122,7 @@
             padding: 10px 14px;
             border-radius: 12px;
             transition: 0.2s ease;
+            display: inline-block;
         }
 
         .nav-link:hover {
@@ -102,8 +143,9 @@
         }
 
         .page-title {
-            margin: 0 0 18px;
+            margin: 0 0 12px;
             font-size: 2rem;
+            line-height: 1.15;
         }
 
         .muted {
@@ -148,6 +190,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: 0.2s ease;
+            text-align: center;
         }
 
         .btn-primary {
@@ -195,6 +238,11 @@
             color: #991b1b;
         }
 
+        .badge-warning {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
         .grid-2 {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -222,9 +270,9 @@
 
         .score-row {
             display: grid;
-            grid-template-columns: 1fr 90px 1fr 90px;
+            grid-template-columns: minmax(110px, 1fr) 90px minmax(110px, 1fr) 90px;
             gap: 10px;
-            align-items: center;
+            align-items: end;
         }
 
         input[type="number"], select {
@@ -287,7 +335,182 @@
             color: #1d4ed8;
         }
 
+        .mobile-only {
+            display: none;
+        }
+
+        .desktop-only {
+            display: block;
+        }
+
+        .mobile-stack-cards {
+            display: none;
+        }
+
+        .mobile-card {
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 16px;
+            background: #ffffff;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.05);
+            margin-bottom: 14px;
+        }
+
+        .mobile-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .mobile-card-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .mobile-card-subtitle {
+            font-size: 0.9rem;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .mobile-data-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .mobile-data-box {
+            background: #f8fafc;
+            border: 1px solid #e8eef7;
+            border-radius: 14px;
+            padding: 10px 12px;
+        }
+
+        .mobile-label {
+            font-size: 0.78rem;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .mobile-value {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .pronostico-item {
+            background: #f8fafc;
+            border: 1px solid #e8eef7;
+            border-radius: 14px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+
+        .pronostico-item:last-child {
+            margin-bottom: 0;
+        }
+
+
+        .user-pill {
+            color: var(--secondary);
+            font-weight: 700;
+            padding: 10px 14px;
+            border-radius: 12px;
+            background: #f8fafc;
+        }
+
         @media (max-width: 768px) {
+            .container {
+                width: min(100%, 94%);
+            }
+
+            .topbar {
+                padding: 16px 0;
+            }
+
+            .brand-title {
+                font-size: 1.45rem;
+            }
+
+            .brand-subtitle {
+                font-size: 0.88rem;
+                line-height: 1.35;
+            }
+
+            .page {
+                padding: 18px 0 28px;
+            }
+
+            .card {
+                padding: 16px;
+                border-radius: 14px;
+            }
+
+            .page-title {
+                font-size: 1.55rem;
+                margin-bottom: 10px;
+            }
+
+            .nav-toggle-label {
+                display: flex;
+            }
+
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: calc(100% + 10px);
+                left: 0;
+                right: 0;
+                background: white;
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                box-shadow: var(--shadow);
+                padding: 12px;
+                z-index: 1000;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+            }
+
+            .nav-left,
+            .nav-right {
+                width: 100%;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+                margin-left: 0;
+            }
+
+            .nav-toggle:checked + .nav-toggle-label + .nav-menu {
+                display: flex;
+            }
+
+            .nav-link,
+            .btn,
+            .user-pill {
+                width: 100%;
+                text-align: left;
+            }
+
+            .btn.btn-secondary,
+            .btn.btn-primary,
+            .btn.btn-warning {
+                width: 100%;
+            }
+
+            .actions {
+                flex-direction: column;
+            }
+
+            .actions .btn {
+                width: 100%;
+            }
+
             .grid-2 {
                 grid-template-columns: 1fr;
             }
@@ -296,10 +519,50 @@
                 grid-template-columns: 1fr;
             }
 
-            .page-title {
-                font-size: 1.6rem;
+            .desktop-only {
+                display: none !important;
+            }
+
+            .mobile-only {
+                display: block !important;
+            }
+
+            .mobile-stack-cards {
+                display: block;
+            }
+
+            .mobile-data-grid {
+                grid-template-columns: 1fr 1fr;
             }
         }
+
+        @media (max-width: 480px) {
+            .brand-title {
+                font-size: 1.3rem;
+            }
+
+            .brand-subtitle {
+                font-size: 0.83rem;
+            }
+
+            .mobile-data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 1.4rem;
+            }
+
+            .btn {
+                padding: 12px 14px;
+            }
+
+            .nav-link {
+                padding: 12px 14px;
+            }
+        }
+
+        
     </style>
 </head>
 <body>
@@ -313,31 +576,37 @@
     </header>
 
     <nav class="navbar">
-    <div class="container nav-inner">
+        <div class="container nav-inner">
+            <input type="checkbox" id="nav-toggle" class="nav-toggle">
+            <label for="nav-toggle" class="nav-toggle-label">☰</label>
 
-        <a class="nav-link" href="{{ url_for('public.home') }}">Inicio</a>
+            <div class="nav-menu">
+                <div class="nav-left">
+                    <a class="nav-link" href="{{ url_for('public.home') }}">Inicio</a>
 
-        {% if current_user.is_authenticated %}
-            <a class="nav-link" href="{{ url_for('jornadas.listar') }}">Jornadas</a>
-            <a class="nav-link" href="{{ url_for('apuestas.mis_apuestas') }}">Mis apuestas</a>
-            <a class="nav-link" href="{{ url_for('resultados.tabla') }}">Resultados</a>
-             <a class="btn btn-secondary" href="{{ url_for('resultados.ranking_general') }}">Ranking general</a>
-            {% if current_user.es_admin %}
-                <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a>
-            {% endif %}
+                    {% if current_user.is_authenticated %}
+                        <a class="nav-link" href="{{ url_for('jornadas.listar') }}">Jornadas</a>
+                        <a class="nav-link" href="{{ url_for('apuestas.mis_apuestas') }}">Mis apuestas</a>
+                        <a class="nav-link" href="{{ url_for('resultados.tabla') }}">Resultados</a>
+                        <a class="btn btn-secondary" href="{{ url_for('resultados.ranking_general') }}">Ranking general</a>
 
-            <span class="nav-link" style="margin-left:auto;">
-                👤 {{ current_user.nombre_completo() }}
-            </span>
+                        {% if current_user.es_admin %}
+                            <a class="nav-link" href="{{ url_for('admin.dashboard') }}">Admin</a>
+                        {% endif %}
+                    {% else %}
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
+                    {% endif %}
+                </div>
 
-            <a class="nav-link" href="{{ url_for('auth.logout') }}">Salir</a>
-
-        {% else %}
-            <a class="nav-link" href="{{ url_for('auth.login') }}">Login</a>
-        {% endif %}
-
-    </div>
-</nav>
+                {% if current_user.is_authenticated %}
+                <div class="nav-right">
+                    <span class="user-pill">👤 {{ current_user.nombre_completo() }}</span>
+                    <a class="nav-link" href="{{ url_for('auth.logout') }}">Salir</a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
 
     <main class="page">
         <div class="container">

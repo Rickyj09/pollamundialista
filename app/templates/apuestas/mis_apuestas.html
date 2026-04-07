@@ -4,10 +4,14 @@
 
 {% block content %}
 <h2 class="page-title">Apuestas registradas</h2>
-<p class="muted">Aquí puedes revisar tus apuestas y editar las que aún estén dentro del tiempo permitido.</p>
+<p class="muted">
+    Aquí puedes revisar tus apuestas y editar las que aún estén dentro del tiempo permitido.
+</p>
 
 {% if apuestas %}
-    <div class="table-wrap">
+
+    <!-- TABLA PARA ESCRITORIO -->
+    <div class="table-wrap desktop-only">
         <table>
             <thead>
                 <tr>
@@ -30,11 +34,17 @@
                     <td>{{ apuesta.jornada_grupo.grupo.nombre }}</td>
                     <td>{{ apuesta.jornada_grupo.numero_jornada }}</td>
                     <td>${{ "%.2f"|format(apuesta.valor_apostado|float) }}</td>
-                    <td>{{ apuesta.estado_pago }}</td>
+                    <td>
+                        {% if apuesta.estado_pago|lower == "confirmado" %}
+                            <span class="badge badge-open">Confirmado</span>
+                        {% else %}
+                            <span class="badge badge-closed">{{ apuesta.estado_pago }}</span>
+                        {% endif %}
+                    </td>
                     <td>{{ apuesta.puntos_total }}</td>
                     <td>
                         {% for pronostico in apuesta.pronosticos %}
-                            <div>
+                            <div style="margin-bottom: 8px;">
                                 {{ pronostico.partido.equipo_local.nombre }}
                                 <strong>{{ pronostico.goles_local_pred }} - {{ pronostico.goles_visitante_pred }}</strong>
                                 {{ pronostico.partido.equipo_visitante.nombre }}
@@ -55,6 +65,77 @@
             </tbody>
         </table>
     </div>
+
+    <!-- CARDS PARA MÓVIL -->
+    <div class="mobile-stack-cards mobile-only">
+        {% for apuesta in apuestas %}
+        <div class="mobile-card">
+            <div class="mobile-card-header">
+                <div>
+                    <h3 class="mobile-card-title">
+                        {{ apuesta.jornada_grupo.grupo.nombre }} · Jornada {{ apuesta.jornada_grupo.numero_jornada }}
+                    </h3>
+                    <div class="mobile-card-subtitle">
+                        Apuesta #{{ apuesta.id }} · {{ apuesta.usuario.nombre_completo() }}
+                    </div>
+                </div>
+
+                <div>
+                    {% if apuesta.estado_pago|lower == "confirmado" %}
+                        <span class="badge badge-open">Confirmado</span>
+                    {% else %}
+                        <span class="badge badge-closed">{{ apuesta.estado_pago }}</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mobile-data-grid">
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Valor</div>
+                    <div class="mobile-value">${{ "%.2f"|format(apuesta.valor_apostado|float) }}</div>
+                </div>
+
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Puntos</div>
+                    <div class="mobile-value">{{ apuesta.puntos_total }}</div>
+                </div>
+
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Grupo</div>
+                    <div class="mobile-value">{{ apuesta.jornada_grupo.grupo.nombre }}</div>
+                </div>
+
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Jornada</div>
+                    <div class="mobile-value">{{ apuesta.jornada_grupo.numero_jornada }}</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 14px;">
+                <div class="mobile-label" style="margin-bottom: 8px;">Pronósticos</div>
+
+                {% for pronostico in apuesta.pronosticos %}
+                <div class="mobile-data-box" style="margin-bottom: 8px;">
+                    <div class="mobile-value" style="font-size: 0.95rem;">
+                        {{ pronostico.partido.equipo_local.nombre }}
+                        <strong>{{ pronostico.goles_local_pred }} - {{ pronostico.goles_visitante_pred }}</strong>
+                        {{ pronostico.partido.equipo_visitante.nombre }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if apuesta.jornada_grupo.estado == "abierta" %}
+                <a class="btn btn-warning" href="{{ url_for('apuestas.editar_apuesta', apuesta_id=apuesta.id) }}">
+                    Editar apuesta
+                </a>
+            {% else %}
+                <div class="muted" style="font-weight: 700;">Jornada cerrada</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
 {% else %}
     <p>No hay apuestas registradas.</p>
 {% endif %}

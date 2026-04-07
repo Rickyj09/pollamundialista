@@ -7,7 +7,9 @@
 <p class="muted">Puntaje acumulado total de todos los jugadores.</p>
 
 {% if ranking %}
-    <div class="table-wrap">
+
+    <!-- TABLA PARA ESCRITORIO -->
+    <div class="table-wrap desktop-only">
         <table>
             <thead>
                 <tr>
@@ -19,19 +21,69 @@
             <tbody>
                 {% for fila in ranking %}
                 <tr>
-                    <td>{{ loop.index }}</td>
+                    <td>
+                        {% if loop.index == 1 %}
+                            🥇 {{ loop.index }}
+                        {% elif loop.index == 2 %}
+                            🥈 {{ loop.index }}
+                        {% elif loop.index == 3 %}
+                            🥉 {{ loop.index }}
+                        {% else %}
+                            {{ loop.index }}
+                        {% endif %}
+                    </td>
+
                     <td>{{ fila.nombres }} {{ fila.apellidos or '' }}</td>
-                    <td>{{ fila.puntos }}</td>
+
+                    <td><strong>{{ fila.puntos }}</strong></td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+
+    <!-- CARDS PARA MÓVIL -->
+    <div class="mobile-stack-cards mobile-only">
+        {% for fila in ranking %}
+        <div class="mobile-card">
+            <div class="mobile-card-header">
+                <div>
+                    <h3 class="mobile-card-title">
+                        {% if loop.index == 1 %}
+                            🥇 Posición {{ loop.index }}
+                        {% elif loop.index == 2 %}
+                            🥈 Posición {{ loop.index }}
+                        {% elif loop.index == 3 %}
+                            🥉 Posición {{ loop.index }}
+                        {% else %}
+                            Posición {{ loop.index }}
+                        {% endif %}
+                    </h3>
+
+                    <div class="mobile-card-subtitle">
+                        {{ fila.nombres }} {{ fila.apellidos or '' }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="mobile-data-grid">
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Puntos acumulados</div>
+                    <div class="mobile-value">{{ fila.puntos }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
 {% else %}
     <p>No hay datos acumulados todavía.</p>
 {% endif %}
 
 <div class="actions">
-    <a class="btn btn-secondary" href="{{ url_for('resultados.tabla') }}">Ver ranking por jornada</a>
+    <a class="btn btn-secondary" href="{{ url_for('resultados.tabla') }}">
+        Ver ranking por jornada
+    </a>
 </div>
+
 {% endblock %}
