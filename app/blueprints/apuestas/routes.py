@@ -163,6 +163,7 @@ def editar_apuesta(apuesta_id):
 def actualizar_apuesta(apuesta_id):
     apuesta = Apuesta.query.get_or_404(apuesta_id)
 
+    # 🔒 Validar dueño o admin
     if apuesta.usuario_id != current_user.id and not current_user.es_admin:
         flash("No tienes permiso para actualizar esta apuesta.", "danger")
         return redirect(url_for("apuestas.mis_apuestas"))
@@ -170,6 +171,28 @@ def actualizar_apuesta(apuesta_id):
     jornada = apuesta.jornada_grupo
     partidos = sorted(jornada.partidos, key=lambda p: (p.fecha_partido, p.numero_calendario or 0))
 
+    # 🔒 Validar cierre de jornada
     if not jornada_esta_abierta(jornada):
         flash("La apuesta ya no se puede editar porque la jornada está cerrada.", "danger")
         return redirect(url_for("apuestas.mis_apuestas"))
+
+    try:
+        for pronostico in apuesta.pronosticos:
+            goles_local = request.form.get(f"goles_local_{pronostico.partido_id}", type=int)
+            goles_visitante = request.form.get(f"goles_visitante_{pronostico.partido_id}", type=int)
+
+            if goles_local is None or goles_visitante is None:
+                flash("Debes ingresar todos los marcadores.", "warning")
+                return redirect(url_for("apuestas.editar_apuesta", apuesta_id=apuesta.id))
+
+            pronostico.goles_local_pred = goles_local
+            pronostico.goles_visitante_pred = goles_visitante
+
+        db.session.commit()
+        flash("Apuesta actualizada correctamente.", "success")
+        return redirect(url_for("apuestas.mis_apuestas"))
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error al actualizar la apuesta: {str(e)}", "danger")
+        return redirect(url_for("apuestas.editar_apuesta", apuesta_id=apuesta.id))
