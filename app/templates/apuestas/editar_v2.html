@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Editar apuesta{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Editar apuesta</h2>
+
+<div class="match-summary">
+    <div class="summary-item">
+        <div class="summary-label">Jugador</div>
+        <div class="summary-value">{{ apuesta.usuario.nombre_completo() }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Jornada</div>
+        <div class="summary-value">{{ jornada.nombre }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Grupo</div>
+        <div class="summary-value">{{ jornada.grupo.nombre }} · Jornada {{ jornada.numero_jornada }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Cierre</div>
+        <div class="summary-value">{{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}</div>
+    </div>
+</div>
+
+<form method="POST" action="{{ url_for('apuestas.actualizar_apuesta', apuesta_id=apuesta.id) }}">
+    <div class="grid-2">
+        {% for partido in partidos %}
+            {% set pronostico = pronosticos_dict.get(partido.id) %}
+            <div class="match-card">
+                <div class="match-title">{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</div>
+                <div class="match-meta">
+                    {{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}
+                    {% if partido.hora_est %} · EST {{ partido.hora_est }}{% endif %}
+                    {% if partido.hora_local %} · Local {{ partido.hora_local }}{% endif %}<br>
+                    {{ partido.estadio or "" }}{% if partido.estadio and partido.ciudad %} - {% endif %}{{ partido.ciudad or "" }}
+                </div>
+                <div class="score-row">
+                    <div class="match-score-field">
+                        <label for="goles_local_{{ partido.id }}">{{ partido.equipo_local.nombre }}</label>
+                        <input id="goles_local_{{ partido.id }}" type="number" name="goles_local_{{ partido.id }}" min="0" required value="{{ pronostico.goles_local_pred if pronostico else '' }}">
+                    </div>
+                    <div class="match-score-field">
+                        <label for="goles_visitante_{{ partido.id }}">{{ partido.equipo_visitante.nombre }}</label>
+                        <input id="goles_visitante_{{ partido.id }}" type="number" name="goles_visitante_{{ partido.id }}" min="0" required value="{{ pronostico.goles_visitante_pred if pronostico else '' }}">
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="actions">
+        <button type="submit" class="btn btn-warning">Actualizar apuesta</button>
+        <a href="{{ url_for('apuestas.mis_apuestas') }}" class="btn btn-secondary">Volver</a>
+    </div>
+</form>
+{% endblock %}

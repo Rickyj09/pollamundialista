@@ -12,7 +12,7 @@ def tabla():
 
     jornadas = (
         JornadaGrupo.query
-        .order_by(JornadaGrupo.grupo_id.asc(), JornadaGrupo.numero_jornada.asc())
+        .order_by(JornadaGrupo.fecha_cierre.asc(), JornadaGrupo.id.asc())
         .all()
     )
 
@@ -30,7 +30,7 @@ def tabla():
             )
 
     return render_template(
-        "resultados/tabla.html",
+        "resultados/tabla_v2.html",
         jornadas=jornadas,
         apuestas=apuestas,
         jornada_seleccionada=jornada_seleccionada
@@ -54,7 +54,7 @@ def ranking_general():
     pozo_final = PozoAcumulado.query.filter_by(estado="activo").first()
 
     return render_template(
-        "resultados/general.html",
+        "resultados/general_v2.html",
         ranking=ranking,
         pozo_final=pozo_final
     )

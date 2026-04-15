@@ -50,7 +50,7 @@ def nueva_apuesta(jornada_id):
         return redirect(url_for("jornadas.listar"))
 
     return render_template(
-        "apuestas/nueva.html",
+        "apuestas/nueva_v2.html",
         jornada=jornada,
         partidos=partidos
     )
@@ -150,7 +150,7 @@ def editar_apuesta(apuesta_id):
     pronosticos_dict = {p.partido_id: p for p in apuesta.pronosticos}
 
     return render_template(
-        "apuestas/editar.html",
+        "apuestas/editar_v2.html",
         apuesta=apuesta,
         jornada=jornada,
         partidos=partidos,

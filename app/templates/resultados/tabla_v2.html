@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+
+{% block title %}Resultados{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Ranking por jornada</h2>
+<p class="muted">Consulta la clasificacion de cada jornada de grupo y entra al detalle cuando necesites validar pronosticos.</p>
+
+<form method="GET" class="form-group">
+    <label for="jornada_id">Selecciona una jornada</label>
+    <select name="jornada_id" id="jornada_id" onchange="this.form.submit()">
+        <option value="">Seleccione</option>
+        {% for jornada in jornadas %}
+            <option value="{{ jornada.id }}" {% if jornada_seleccionada and jornada.id == jornada_seleccionada.id %}selected{% endif %}>
+                {{ jornada.nombre }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+{% if jornada_seleccionada %}
+    <div class="match-summary" style="margin-top: 20px;">
+        <div class="summary-item">
+            <div class="summary-label">Jornada</div>
+            <div class="summary-value">{{ jornada_seleccionada.nombre }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Grupo</div>
+            <div class="summary-value">{{ jornada_seleccionada.grupo.nombre }} · Jornada {{ jornada_seleccionada.numero_jornada }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Transparencia</div>
+            <div class="summary-value">
+                <a class="btn btn-secondary btn-block" href="{{ url_for('jornadas.detalle', jornada_id=jornada_seleccionada.id) }}">Ver detalle y pronosticos</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="actions desktop-only" style="margin-bottom: 16px; gap: 10px;">
+        <span class="badge badge-open">Jugadores: {{ jornada_seleccionada.total_jugadores_confirmados }}</span>
+        <span class="badge badge-open">Pozo: ${{ "%.2f"|format(jornada_seleccionada.pozo_total|float) }}</span>
+        <span class="badge badge-open">Premio: ${{ "%.2f"|format(jornada_seleccionada.pozo_premio|float) }}</span>
+        <span class="badge badge-open">Acumulado: ${{ "%.2f"|format(jornada_seleccionada.pozo_acumulado|float) }}</span>
+    </div>
+
+    <div class="mobile-stack-cards mobile-only" style="margin-bottom: 16px;">
+        <div class="mobile-data-grid">
+            <div class="mobile-data-box">
+                <div class="mobile-label">Jugadores</div>
+                <div class="mobile-value">{{ jornada_seleccionada.total_jugadores_confirmados }}</div>
+            </div>
+            <div class="mobile-data-box">
+                <div class="mobile-label">Pozo</div>
+                <div class="mobile-value">${{ "%.2f"|format(jornada_seleccionada.pozo_total|float) }}</div>
+            </div>
+            <div class="mobile-data-box">
+                <div class="mobile-label">Premio</div>
+                <div class="mobile-value">${{ "%.2f"|format(jornada_seleccionada.pozo_premio|float) }}</div>
+            </div>
+            <div class="mobile-data-box">
+                <div class="mobile-label">Acumulado</div>
+                <div class="mobile-value">${{ "%.2f"|format(jornada_seleccionada.pozo_acumulado|float) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 18px;">
+        {% if jornada_seleccionada.estado_ganador == "definido" and jornada_seleccionada.ganador_apuesta %}
+            <span class="badge badge-open">Ganador: {{ jornada_seleccionada.ganador_apuesta.usuario.nombre_completo() }}</span>
+        {% elif jornada_seleccionada.estado_ganador == "empatado" %}
+            <span class="badge badge-warning">Empate en la jornada</span>
+        {% else %}
+            <span class="badge badge-closed">Ganador pendiente</span>
+        {% endif %}
+    </div>
+
+    {% if apuestas %}
+        <div class="table-wrap desktop-only">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Posicion</th>
+                        <th>Jugador</th>
+                        <th>Puntos</th>
+                        <th>Pago</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for apuesta in apuestas %}
+                    <tr>
+                        <td>{{ apuesta.posicion if apuesta.posicion else "-" }}</td>
+                        <td>{{ apuesta.usuario.nombre_completo() }}</td>
+                        <td><strong>{{ apuesta.puntos_total }}</strong></td>
+                        <td>
+                            {% if apuesta.estado_pago == "pagado" %}
+                                <span class="badge badge-open">Pagado</span>
+                            {% else %}
+                                <span class="badge badge-warning">Pendiente</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mobile-stack-cards mobile-only">
+            {% for apuesta in apuestas %}
+            <div class="mobile-card">
+                <div class="mobile-card-header">
+                    <div>
+                        <h3 class="mobile-card-title">Posicion {{ apuesta.posicion if apuesta.posicion else "-" }}</h3>
+                        <div class="mobile-card-subtitle">{{ apuesta.usuario.nombre_completo() }}</div>
+                    </div>
+                    <div>
+                        {% if apuesta.estado_pago == "pagado" %}
+                            <span class="badge badge-open">Pagado</span>
+                        {% else %}
+                            <span class="badge badge-warning">Pendiente</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mobile-data-grid">
+                    <div class="mobile-data-box">
+                        <div class="mobile-label">Puntos</div>
+                        <div class="mobile-value">{{ apuesta.puntos_total }}</div>
+                    </div>
+                    <div class="mobile-data-box">
+                        <div class="mobile-label">Pago</div>
+                        <div class="mobile-value">{{ apuesta.estado_pago }}</div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No hay apuestas registradas para esta jornada.</p>
+    {% endif %}
+{% endif %}
+{% endblock %}

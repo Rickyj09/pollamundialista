@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de jornada{% endblock %}
+
+{% block content %}
+<h2 class="page-title">{{ jornada.nombre }}</h2>
+<p class="muted section-note">Revisa los partidos de la jornada y, cuando la jornada este cerrada, los pronosticos registrados por cada participante.</p>
+
+<div class="match-summary">
+    <div class="summary-item">
+        <div class="summary-label">Grupo</div>
+        <div class="summary-value">{{ jornada.grupo.nombre }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Jornada</div>
+        <div class="summary-value">{{ jornada.numero_jornada }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Estado</div>
+        <div class="summary-value">
+            {% if jornada.estado == "abierta" %}
+                <span class="badge badge-open">Abierta</span>
+            {% else %}
+                <span class="badge badge-closed">{{ jornada.estado|capitalize }}</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Cierre</div>
+        <div class="summary-value">{{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}</div>
+    </div>
+</div>
+
+<div class="inline-actions">
+    {% if jornada.estado == "abierta" %}
+        <a class="btn btn-primary" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">Registrar apuesta</a>
+    {% endif %}
+    <a class="btn btn-secondary" href="{{ url_for('jornadas.listar') }}">Volver a jornadas</a>
+</div>
+
+<h3 class="section-title">Partidos</h3>
+
+{% if partidos %}
+    <div class="table-wrap desktop-only">
+        <table>
+            <thead>
+                <tr>
+                    <th>Partido</th>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Estadio</th>
+                    <th>Resultado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for partido in partidos %}
+                <tr>
+                    <td>{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</td>
+                    <td>{{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}</td>
+                    <td>
+                        {% if partido.hora_est %}EST {{ partido.hora_est }}{% endif %}
+                        {% if partido.hora_est and partido.hora_local %}<br>{% endif %}
+                        {% if partido.hora_local %}Local {{ partido.hora_local }}{% endif %}
+                    </td>
+                    <td>{{ partido.estadio or "" }}{% if partido.estadio and partido.ciudad %} - {% endif %}{{ partido.ciudad or "" }}</td>
+                    <td>
+                        {% if partido.goles_local is not none and partido.goles_visitante is not none %}
+                            {{ partido.goles_local }} - {{ partido.goles_visitante }}
+                        {% else %}
+                            Pendiente
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mobile-stack-cards mobile-only">
+        {% for partido in partidos %}
+        <div class="mobile-card">
+            <div class="mobile-card-header">
+                <div>
+                    <h3 class="mobile-card-title">{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</h3>
+                    <div class="mobile-card-subtitle">{{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}</div>
+                </div>
+            </div>
+            <div class="mobile-data-grid">
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Hora</div>
+                    <div class="mobile-value">
+                        {% if partido.hora_est %}EST {{ partido.hora_est }}{% endif %}
+                        {% if partido.hora_est and partido.hora_local %}<br>{% endif %}
+                        {% if partido.hora_local %}Local {{ partido.hora_local }}{% endif %}
+                    </div>
+                </div>
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Resultado</div>
+                    <div class="mobile-value">
+                        {% if partido.goles_local is not none and partido.goles_visitante is not none %}
+                            {{ partido.goles_local }} - {{ partido.goles_visitante }}
+                        {% else %}
+                            Pendiente
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-data-box">
+                <div class="mobile-label">Estadio</div>
+                <div class="mobile-value">{{ partido.estadio or "" }}{% if partido.estadio and partido.ciudad %} - {% endif %}{{ partido.ciudad or "" }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">Esta jornada no tiene partidos cargados todavia.</div>
+{% endif %}
+
+<h3 class="section-title">Pronosticos de participantes</h3>
+
+{% if pronosticos_visibles %}
+    {% if apuestas_por_usuario %}
+        <div class="table-wrap desktop-only">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Usuario</th>
+                        <th>Pronosticos</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fila in apuestas_por_usuario %}
+                    <tr>
+                        <td>{{ fila.usuario.nombre_completo() }}</td>
+                        <td>
+                            <div class="stack-list">
+                                {% for pronostico in fila.pronosticos %}
+                                <div class="pronostico-item">
+                                    <div class="pronostico-match">{{ pronostico.partido.equipo_local.nombre }} vs {{ pronostico.partido.equipo_visitante.nombre }}</div>
+                                    <span class="pronostico-score">{{ pronostico.goles_local_pred }} - {{ pronostico.goles_visitante_pred }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="mobile-stack-cards mobile-only">
+            {% for fila in apuestas_por_usuario %}
+            <div class="mobile-card">
+                <div class="mobile-card-header">
+                    <div>
+                        <h3 class="mobile-card-title">{{ fila.usuario.nombre_completo() }}</h3>
+                        <div class="mobile-card-subtitle">Usuario #{{ fila.usuario.id }}</div>
+                    </div>
+                </div>
+                <div class="stack-list">
+                    {% for pronostico in fila.pronosticos %}
+                    <div class="pronostico-item">
+                        <div class="pronostico-match">{{ pronostico.partido.equipo_local.nombre }} vs {{ pronostico.partido.equipo_visitante.nombre }}</div>
+                        <span class="pronostico-score">{{ pronostico.goles_local_pred }} - {{ pronostico.goles_visitante_pred }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">La jornada ya esta cerrada, pero todavia no hay apuestas registradas para mostrar.</div>
+    {% endif %}
+{% else %}
+    <div class="empty-state">Los pronosticos de otros participantes se habilitan automaticamente cuando la jornada cambie a estado cerrada o liquidada.</div>
+{% endif %}
+{% endblock %}

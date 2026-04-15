@@ -84,7 +84,7 @@ def dashboard():
 @login_required
 def listar_usuarios():
     admin_required()
-    usuarios = Usuario.query.order_by(Usuario.nombres.asc()).all()
+    usuarios = Usuario.query.order_by(Usuario.id.asc()).all()
     return render_template("admin/usuarios_listar.html", usuarios=usuarios)
 
 @admin_bp.route("/usuarios/nuevo", methods=["GET", "POST"])
@@ -132,7 +132,7 @@ def nuevo_usuario():
 def listar_jornadas():
     jornadas = (
         JornadaGrupo.query
-        .order_by(JornadaGrupo.grupo_id.asc(), JornadaGrupo.numero_jornada.asc())
+        .order_by(JornadaGrupo.fecha_cierre.asc(), JornadaGrupo.id.asc())
         .all()
     )
     return render_template("admin/jornadas_listar.html", jornadas=jornadas)
@@ -168,7 +168,7 @@ def nuevo_pago():
     admin_required()
 
     usuarios = Usuario.query.filter_by(activo=True, es_admin=False).order_by(Usuario.nombres.asc()).all()
-    jornadas = JornadaGrupo.query.order_by(JornadaGrupo.grupo_id.asc(), JornadaGrupo.numero_jornada.asc()).all()
+    jornadas = JornadaGrupo.query.order_by(JornadaGrupo.fecha_cierre.asc(), JornadaGrupo.id.asc()).all()
 
     if request.method == "POST":
         usuario_id = request.form.get("usuario_id", type=int)

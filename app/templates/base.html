@@ -158,6 +158,10 @@
             border: 1px solid var(--border);
         }
 
+        .table-wrap table {
+            min-width: 720px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
@@ -191,6 +195,10 @@
             cursor: pointer;
             transition: 0.2s ease;
             text-align: center;
+        }
+
+        .btn-block {
+            width: 100%;
         }
 
         .btn-primary {
@@ -273,6 +281,63 @@
             grid-template-columns: minmax(110px, 1fr) 90px minmax(110px, 1fr) 90px;
             gap: 10px;
             align-items: end;
+        }
+
+        .match-score-field label {
+            font-size: 0.92rem;
+            line-height: 1.35;
+            margin-bottom: 6px;
+        }
+
+        .match-summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding: 14px 16px;
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff, #f8fbff);
+        }
+
+        .summary-item {
+            min-width: 150px;
+            flex: 1 1 180px;
+        }
+
+        .summary-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .summary-value {
+            font-size: 1rem;
+            font-weight: 700;
+            line-height: 1.35;
+        }
+
+        .stack-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .section-title {
+            margin: 26px 0 12px;
+            font-size: 1.3rem;
+        }
+
+        .section-note {
+            margin-bottom: 16px;
+        }
+
+        .inline-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         input[type="number"], select {
@@ -415,6 +480,30 @@
             margin-bottom: 0;
         }
 
+        .pronostico-match {
+            font-weight: 700;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .pronostico-score {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: #e0ecff;
+            color: #1d4ed8;
+            font-weight: 700;
+        }
+
+        .empty-state {
+            padding: 18px;
+            border: 1px dashed var(--border);
+            border-radius: 16px;
+            background: #f8fafc;
+        }
+
 
         .user-pill {
             color: var(--secondary);
@@ -516,7 +605,8 @@
             }
 
             .score-row {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
+                align-items: start;
             }
 
             .desktop-only {
@@ -534,6 +624,10 @@
             .mobile-data-grid {
                 grid-template-columns: 1fr 1fr;
             }
+
+            .summary-item {
+                min-width: 0;
+            }
         }
 
         @media (max-width: 480px) {
@@ -546,6 +640,10 @@
             }
 
             .mobile-data-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .score-row {
                 grid-template-columns: 1fr;
             }
 
