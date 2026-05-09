@@ -15,12 +15,14 @@ def create_app():
     @app.before_request
     def requerir_login_global():
         rutas_publicas = [
+            "public.home",
             "auth.login",
+            "auth.register",
             "static"
         ]
 
         if request.endpoint not in rutas_publicas and not current_user.is_authenticated:
-            return redirect(url_for("auth.login"))
+            return redirect(url_for("auth.login", next=request.url))
     
     from app import models
 

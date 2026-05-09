@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Crear cuenta{% endblock %}
+
+{% block content %}
+<div style="max-width: 520px; margin: 0 auto;">
+    <h2 class="page-title">Crear cuenta</h2>
+    <p class="muted">Registra tu usuario para participar en la polla con tu propia cuenta.</p>
+
+    <form method="POST" action="{{ url_for('auth.register') }}">
+        {% if next_url %}
+            <input type="hidden" name="next" value="{{ next_url }}">
+        {% endif %}
+
+        <div class="form-group">
+            <label for="nombres">Nombre</label>
+            <input type="text" name="nombres" id="nombres" required autocomplete="name">
+        </div>
+
+        <div class="form-group">
+            <label for="email">Correo electronico</label>
+            <input type="email" name="email" id="email" required autocomplete="email">
+        </div>
+
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="password">Contrasena</label>
+                <input type="password" name="password" id="password" minlength="6" required autocomplete="new-password">
+            </div>
+
+            <div class="form-group">
+                <label for="password_confirm">Confirmar contrasena</label>
+                <input type="password" name="password_confirm" id="password_confirm" minlength="6" required autocomplete="new-password">
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn btn-primary">Registrarme</button>
+            <a class="btn btn-secondary" href="{{ url_for('auth.login', next=next_url) if next_url else url_for('auth.login') }}">
+                Ya tengo cuenta
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
