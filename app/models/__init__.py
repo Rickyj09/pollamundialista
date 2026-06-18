@@ -7,3 +7,4 @@ from .apuesta import Apuesta
 from .pronostico import Pronostico
 from .acumulado import UsuarioAcumulado, PozoAcumulado, MovimientoAcumulado
 from .pago_jornada import PagoJornada
+from .auditoria_apuesta_admin import AuditoriaApuestaAdmin

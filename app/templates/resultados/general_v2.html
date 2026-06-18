@@ -4,7 +4,7 @@
 
 {% block content %}
 <h2 class="page-title">Ranking general</h2>
-<p class="muted">Puntaje acumulado total de todos los jugadores.</p>
+<p class="muted">Acumulado total por jugador, sumando puntos, exactos y aciertos de resultado de todas las jornadas.</p>
 
 {% if ranking %}
     <div class="table-wrap desktop-only">
@@ -14,6 +14,8 @@
                     <th>Posicion</th>
                     <th>Jugador</th>
                     <th>Puntos acumulados</th>
+                    <th>Exactos</th>
+                    <th>Aciertos resultado</th>
                 </tr>
             </thead>
             <tbody>
@@ -22,6 +24,8 @@
                     <td>{{ loop.index }}</td>
                     <td>{{ fila.nombres }} {{ fila.apellidos or '' }}</td>
                     <td><strong>{{ fila.puntos }}</strong></td>
+                    <td>{{ fila.exactos }}</td>
+                    <td>{{ fila.aciertos_resultado }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -41,6 +45,14 @@
                 <div class="mobile-data-box">
                     <div class="mobile-label">Puntos acumulados</div>
                     <div class="mobile-value">{{ fila.puntos }}</div>
+                </div>
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Exactos</div>
+                    <div class="mobile-value">{{ fila.exactos }}</div>
+                </div>
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Aciertos resultado</div>
+                    <div class="mobile-value">{{ fila.aciertos_resultado }}</div>
                 </div>
             </div>
         </div>

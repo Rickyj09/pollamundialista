@@ -1,5 +1,11 @@
 from datetime import datetime
 from app.extensions import db
+from app.constants import (
+    VALOR_ACUMULADO_OFICIAL,
+    VALOR_APUESTA_OFICIAL,
+    VALOR_PREMIO_JORNADA_OFICIAL,
+    VALOR_UTILIDAD_OFICIAL,
+)
 
 
 class PagoJornada(db.Model):
@@ -10,7 +16,7 @@ class PagoJornada(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey("usuarios.id"), nullable=False, index=True)
     jornada_grupo_id = db.Column(db.Integer, db.ForeignKey("jornadas_grupo.id"), nullable=False, index=True)
 
-    valor = db.Column(db.Numeric(10, 2), nullable=False, default=3.00)
+    valor = db.Column(db.Numeric(10, 2), nullable=False, default=VALOR_APUESTA_OFICIAL)
     metodo_pago = db.Column(db.String(50), nullable=True)
     referencia = db.Column(db.String(100), nullable=True)
 

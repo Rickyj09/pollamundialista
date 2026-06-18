@@ -82,6 +82,8 @@
                         <th>Posicion</th>
                         <th>Jugador</th>
                         <th>Puntos</th>
+                        <th>Exactos</th>
+                        <th>Aciertos resultado</th>
                         <th>Pago</th>
                     </tr>
                 </thead>
@@ -91,6 +93,8 @@
                         <td>{{ apuesta.posicion if apuesta.posicion else "-" }}</td>
                         <td>{{ apuesta.usuario.nombre_completo() }}</td>
                         <td><strong>{{ apuesta.puntos_total }}</strong></td>
+                        <td>{{ apuesta.exactos }}</td>
+                        <td>{{ apuesta.aciertos_resultado }}</td>
                         <td>
                             {% if apuesta.estado_pago == "pagado" %}
                                 <span class="badge badge-open">Pagado</span>
@@ -124,6 +128,14 @@
                     <div class="mobile-data-box">
                         <div class="mobile-label">Puntos</div>
                         <div class="mobile-value">{{ apuesta.puntos_total }}</div>
+                    </div>
+                    <div class="mobile-data-box">
+                        <div class="mobile-label">Exactos</div>
+                        <div class="mobile-value">{{ apuesta.exactos }}</div>
+                    </div>
+                    <div class="mobile-data-box">
+                        <div class="mobile-label">Aciertos resultado</div>
+                        <div class="mobile-value">{{ apuesta.aciertos_resultado }}</div>
                     </div>
                     <div class="mobile-data-box">
                         <div class="mobile-label">Pago</div>

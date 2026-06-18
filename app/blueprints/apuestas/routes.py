@@ -1,27 +1,18 @@
-from datetime import datetime
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
+
 from app.blueprints.apuestas import apuestas_bp
 from app.extensions import db
-from app.models import JornadaGrupo, Apuesta, Pronostico, Usuario, PagoJornada
-from flask_login import current_user
+from app.models import JornadaGrupo, Apuesta, Usuario
+from app.utils.apuestas import (
+    construir_apuesta,
+    guardar_pronosticos_desde_form,
+    jornada_esta_abierta,
+    obtener_estado_partidos,
+    obtener_partidos_ordenados,
+    usuario_tiene_pago_confirmado,
+)
 
-
-def jornada_esta_abierta(jornada):
-    if jornada.estado != "abierta":
-        return False
-    if jornada.fecha_cierre and datetime.utcnow() > jornada.fecha_cierre:
-        return False
-    return True
-
-
-def usuario_puede_apostar(usuario_id, jornada_id):
-    pago = PagoJornada.query.filter_by(
-        usuario_id=usuario_id,
-        jornada_grupo_id=jornada_id,
-        estado="confirmado"
-    ).first()
-    return pago is not None
 
 @apuestas_bp.route("/")
 @login_required
@@ -39,20 +30,21 @@ def mis_apuestas():
 @login_required
 def nueva_apuesta(jornada_id):
     jornada = JornadaGrupo.query.get_or_404(jornada_id)
-    partidos = sorted(jornada.partidos, key=lambda p: (p.fecha_partido, p.numero_calendario or 0))
+    partidos = obtener_partidos_ordenados(jornada)
 
     if not jornada_esta_abierta(jornada):
-        flash("Esta jornada no está disponible para apuestas.", "warning")
+        flash("Esta jornada ya no tiene partidos disponibles para apostar.", "warning")
         return redirect(url_for("jornadas.listar"))
 
-    if not usuario_puede_apostar(current_user.id, jornada.id):
-        flash("Tu pago para esta jornada aún no ha sido confirmado por el administrador.", "warning")
+    if not usuario_tiene_pago_confirmado(current_user.id, jornada.id):
+        flash("Tu pago para esta jornada aun no ha sido confirmado por el administrador.", "warning")
         return redirect(url_for("jornadas.listar"))
 
     return render_template(
         "apuestas/nueva_v2.html",
         jornada=jornada,
-        partidos=partidos
+        partidos=partidos,
+        estado_partidos=obtener_estado_partidos(partidos),
     )
 
 
@@ -60,10 +52,10 @@ def nueva_apuesta(jornada_id):
 @login_required
 def guardar_apuesta(jornada_id):
     jornada = JornadaGrupo.query.get_or_404(jornada_id)
-    partidos = sorted(jornada.partidos, key=lambda p: (p.fecha_partido, p.numero_calendario or 0))
+    partidos = obtener_partidos_ordenados(jornada)
 
     if not jornada_esta_abierta(jornada):
-        flash("La jornada ya no está abierta para apuestas.", "danger")
+        flash("La jornada ya no tiene partidos disponibles para apostar.", "danger")
         return redirect(url_for("jornadas.listar"))
 
     usuario_id = current_user.id
@@ -73,58 +65,39 @@ def guardar_apuesta(jornada_id):
 
     usuario = Usuario.query.get(usuario_id)
     if not usuario:
-        flash("Usuario no válido.", "danger")
+        flash("Usuario no valido.", "danger")
         return redirect(url_for("apuestas.nueva_apuesta", jornada_id=jornada.id))
 
     apuesta_existente = Apuesta.query.filter_by(
         usuario_id=usuario_id,
-        jornada_grupo_id=jornada.id
+        jornada_grupo_id=jornada.id,
     ).first()
 
     if apuesta_existente:
         flash("Este usuario ya tiene una apuesta registrada para esta jornada.", "warning")
         return redirect(url_for("apuestas.editar_apuesta", apuesta_id=apuesta_existente.id))
 
-    apuesta = Apuesta(
-        usuario_id=usuario_id,
-        jornada_grupo_id=jornada.id,
-        valor_apostado=jornada.valor_apuesta,
-        valor_premio_jornada=jornada.valor_premio_jornada,
-        valor_aporte_acumulado=jornada.valor_acumulado,
-        valor_utilidad=jornada.valor_utilidad,
-        estado_pago="pagado",
-        fecha_pago=datetime.utcnow(),
-        metodo_pago="manual",
-        referencia_pago=None,
-        es_valida_para_acumulado=True
-    )
+    apuesta = construir_apuesta(usuario_id=usuario_id, jornada=jornada, metodo_pago="manual")
 
     db.session.add(apuesta)
     db.session.flush()
 
     try:
-        for partido in partidos:
-            goles_local_pred = request.form.get(f"goles_local_{partido.id}", type=int)
-            goles_visitante_pred = request.form.get(f"goles_visitante_{partido.id}", type=int)
-
-            if goles_local_pred is None or goles_visitante_pred is None:
-                db.session.rollback()
-                flash("Debes ingresar los marcadores de todos los partidos.", "danger")
-                return redirect(url_for("apuestas.nueva_apuesta", jornada_id=jornada.id))
-
-            pronostico = Pronostico(
-                apuesta_id=apuesta.id,
-                partido_id=partido.id,
-                goles_local_pred=goles_local_pred,
-                goles_visitante_pred=goles_visitante_pred,
-                puntos_obtenidos=0
-            )
-            db.session.add(pronostico)
+        guardar_pronosticos_desde_form(
+            apuesta=apuesta,
+            partidos=partidos,
+            form_data=request.form,
+            permitir_partidos_iniciados=False,
+        )
 
         db.session.commit()
         flash("Apuesta registrada correctamente.", "success")
         return redirect(url_for("apuestas.mis_apuestas"))
 
+    except ValueError as error:
+        db.session.rollback()
+        flash(str(error), "danger")
+        return redirect(url_for("apuestas.nueva_apuesta", jornada_id=jornada.id))
     except Exception as e:
         db.session.rollback()
         flash(f"Error al guardar la apuesta: {str(e)}", "danger")
@@ -141,10 +114,10 @@ def editar_apuesta(apuesta_id):
         return redirect(url_for("apuestas.mis_apuestas"))
 
     jornada = apuesta.jornada_grupo
-    partidos = sorted(jornada.partidos, key=lambda p: (p.fecha_partido, p.numero_calendario or 0))
+    partidos = obtener_partidos_ordenados(jornada)
 
     if not jornada_esta_abierta(jornada):
-        flash("La apuesta ya no se puede editar porque la jornada está cerrada.", "warning")
+        flash("La apuesta ya no se puede editar porque todos los partidos editables de la jornada ya iniciaron.", "warning")
         return redirect(url_for("apuestas.mis_apuestas"))
 
     pronosticos_dict = {p.partido_id: p for p in apuesta.pronosticos}
@@ -154,7 +127,8 @@ def editar_apuesta(apuesta_id):
         apuesta=apuesta,
         jornada=jornada,
         partidos=partidos,
-        pronosticos_dict=pronosticos_dict
+        pronosticos_dict=pronosticos_dict,
+        estado_partidos=obtener_estado_partidos(partidos),
     )
 
 
@@ -163,35 +137,33 @@ def editar_apuesta(apuesta_id):
 def actualizar_apuesta(apuesta_id):
     apuesta = Apuesta.query.get_or_404(apuesta_id)
 
-    # 🔒 Validar dueño o admin
     if apuesta.usuario_id != current_user.id and not current_user.es_admin:
         flash("No tienes permiso para actualizar esta apuesta.", "danger")
         return redirect(url_for("apuestas.mis_apuestas"))
 
     jornada = apuesta.jornada_grupo
-    partidos = sorted(jornada.partidos, key=lambda p: (p.fecha_partido, p.numero_calendario or 0))
+    partidos = obtener_partidos_ordenados(jornada)
 
-    # 🔒 Validar cierre de jornada
     if not jornada_esta_abierta(jornada):
-        flash("La apuesta ya no se puede editar porque la jornada está cerrada.", "danger")
+        flash("La apuesta ya no se puede editar porque todos los partidos editables de la jornada ya iniciaron.", "danger")
         return redirect(url_for("apuestas.mis_apuestas"))
 
     try:
-        for pronostico in apuesta.pronosticos:
-            goles_local = request.form.get(f"goles_local_{pronostico.partido_id}", type=int)
-            goles_visitante = request.form.get(f"goles_visitante_{pronostico.partido_id}", type=int)
-
-            if goles_local is None or goles_visitante is None:
-                flash("Debes ingresar todos los marcadores.", "warning")
-                return redirect(url_for("apuestas.editar_apuesta", apuesta_id=apuesta.id))
-
-            pronostico.goles_local_pred = goles_local
-            pronostico.goles_visitante_pred = goles_visitante
+        guardar_pronosticos_desde_form(
+            apuesta=apuesta,
+            partidos=partidos,
+            form_data=request.form,
+            permitir_partidos_iniciados=False,
+        )
 
         db.session.commit()
         flash("Apuesta actualizada correctamente.", "success")
         return redirect(url_for("apuestas.mis_apuestas"))
 
+    except ValueError as error:
+        db.session.rollback()
+        flash(str(error), "warning")
+        return redirect(url_for("apuestas.editar_apuesta", apuesta_id=apuesta.id))
     except Exception as e:
         db.session.rollback()
         flash(f"Error al actualizar la apuesta: {str(e)}", "danger")

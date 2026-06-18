@@ -11,5 +11,10 @@
     <a class="btn btn-primary" href="{{ url_for('admin.listar_usuarios') }}">Usuarios</a>
     <a class="btn btn-primary" href="{{ url_for('admin.listar_pagos') }}">Pagos</a>
     <a class="btn btn-primary" href="{{ url_for('admin.listar_partidos') }}">Resultados</a>
+    <a class="btn btn-primary" href="{{ url_for('admin.registrar_apuesta_por_usuario') }}">Registrar apuesta por participante</a>
 </div>
+
+<form method="POST" action="{{ url_for('admin.recalcular_rankings') }}" style="margin-top: 20px;">
+    <button type="submit" class="btn btn-secondary">Recalcular ranking general</button>
+</form>
 {% endblock %}

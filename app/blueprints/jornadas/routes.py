@@ -37,8 +37,8 @@ def detalle(jornada_id):
         ),
     )
 
-    pronosticos_visibles = jornada.estado in {"cerrada", "liquidada"}
-    apuestas_por_usuario = []
+    pronosticos_visibles = jornada.pronosticos_son_visibles()
+    pronosticos_por_partido = []
 
     if pronosticos_visibles:
         apuestas = (
@@ -58,29 +58,34 @@ def detalle(jornada_id):
             .all()
         )
 
-        for apuesta in apuestas:
-            pronosticos_ordenados = sorted(
-                apuesta.pronosticos,
-                key=lambda pronostico: (
-                    pronostico.partido.fecha_partido,
-                    pronostico.partido.numero_calendario or 0,
-                    pronostico.partido.id,
-                ),
-            )
+        filas_por_partido = {partido.id: [] for partido in partidos}
 
-            if pronosticos_ordenados:
-                apuestas_por_usuario.append(
+        for apuesta in apuestas:
+            for pronostico in apuesta.pronosticos:
+                filas_por_partido.setdefault(pronostico.partido_id, []).append(
                     {
                         "usuario": apuesta.usuario,
-                        "apuesta": apuesta,
-                        "pronosticos": pronosticos_ordenados,
+                        "estado_pago": (apuesta.estado_pago or "").strip(),
+                        "pronostico": pronostico,
                     }
                 )
+
+        for partido in partidos:
+            filas = sorted(
+                filas_por_partido.get(partido.id, []),
+                key=lambda fila: (fila["usuario"].id, fila["pronostico"].id),
+            )
+            pronosticos_por_partido.append(
+                {
+                    "partido": partido,
+                    "filas": filas,
+                }
+            )
 
     return render_template(
         "jornadas/detalle_v2.html",
         jornada=jornada,
         partidos=partidos,
         pronosticos_visibles=pronosticos_visibles,
-        apuestas_por_usuario=apuestas_por_usuario,
+        pronosticos_por_partido=pronosticos_por_partido,
     )

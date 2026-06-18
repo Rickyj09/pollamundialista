@@ -1,6 +1,12 @@
 from datetime import datetime, date
 from app.extensions import db
 from app.models import Grupo, Equipo, JornadaGrupo, Partido
+from app.constants import (
+    VALOR_ACUMULADO_OFICIAL,
+    VALOR_APUESTA_OFICIAL,
+    VALOR_PREMIO_JORNADA_OFICIAL,
+    VALOR_UTILIDAD_OFICIAL,
+)
 
 
 def to_date(fecha_str):
@@ -43,16 +49,22 @@ def upsert_jornada(grupo, numero_jornada, fecha_cierre):
             grupo_id=grupo.id,
             numero_jornada=numero_jornada,
             nombre=nombre,
-            valor_apuesta=3.00,
-            valor_premio_jornada=2.00,
-            valor_acumulado=0.50,
-            valor_utilidad=0.50,
+            valor_apuesta=VALOR_APUESTA_OFICIAL,
+            valor_premio_jornada=VALOR_PREMIO_JORNADA_OFICIAL,
+            valor_acumulado=VALOR_ACUMULADO_OFICIAL,
+            valor_utilidad=VALOR_UTILIDAD_OFICIAL,
             fecha_apertura=datetime(2026, 1, 1, 0, 0, 0),
             fecha_cierre=fecha_cierre,
             estado="abierta"
         )
         db.session.add(jornada)
         db.session.flush()
+
+    jornada.nombre = nombre
+    jornada.valor_apuesta = VALOR_APUESTA_OFICIAL
+    jornada.valor_premio_jornada = VALOR_PREMIO_JORNADA_OFICIAL
+    jornada.valor_acumulado = VALOR_ACUMULADO_OFICIAL
+    jornada.valor_utilidad = VALOR_UTILIDAD_OFICIAL
     return jornada
 
 

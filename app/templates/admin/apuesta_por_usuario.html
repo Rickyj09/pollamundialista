@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar apuesta por participante{% endblock %}
+
+{% block content %}
+<h2 class="page-title">Registrar apuesta por participante</h2>
+<p class="muted">Usa esta pantalla para cargar pronosticos recibidos por WhatsApp, llamada o asistencia presencial. Los cierres se validan con hora oficial de Ecuador.</p>
+
+<form method="GET">
+    <div class="grid-2">
+        <div class="form-group">
+            <label>Participante</label>
+            <select name="usuario_id" required>
+                <option value="">Seleccione</option>
+                {% for usuario in usuarios %}
+                    <option value="{{ usuario.id }}" {% if usuario_seleccionado and usuario.id == usuario_seleccionado.id %}selected{% endif %}>
+                        {{ usuario.nombre_completo() }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Jornada</label>
+            <select name="jornada_id" required>
+                <option value="">Seleccione</option>
+                {% for jornada in jornadas %}
+                    <option value="{{ jornada.id }}" {% if jornada_seleccionada and jornada.id == jornada_seleccionada.id %}selected{% endif %}>
+                        {{ jornada.nombre }} · {{ jornada.grupo.nombre }} · Estado {{ jornada.estado_mostrable() }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <div class="grid-2">
+        <div class="form-group">
+            <label>Modo</label>
+            <select name="modo_registro">
+                <option value="registro" {% if not permitir_correccion %}selected{% endif %}>Registro normal</option>
+                <option value="correccion" {% if permitir_correccion %}selected{% endif %}>Correccion administrativa</option>
+            </select>
+        </div>
+        <div class="form-group" style="display: flex; align-items: end;">
+            <button type="submit" class="btn btn-secondary">Cargar jornada</button>
+        </div>
+    </div>
+</form>
+
+{% if usuario_seleccionado and jornada_seleccionada %}
+    <div class="match-summary" style="margin-top: 20px;">
+        <div class="summary-item">
+            <div class="summary-label">Participante</div>
+            <div class="summary-value">{{ usuario_seleccionado.nombre_completo() }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Jornada</div>
+            <div class="summary-value">{{ jornada_seleccionada.nombre }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Estado</div>
+            <div class="summary-value">
+                {% if jornada_abierta %}
+                    <span class="badge badge-open">Abierta en hora Ecuador</span>
+                {% elif permitir_correccion %}
+                    <span class="badge badge-warning">Correccion administrativa</span>
+                {% else %}
+                    <span class="badge badge-closed">Cerrada en hora Ecuador</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Apuesta existente</div>
+            <div class="summary-value">{{ "Si" if apuesta_existente else "No" }}</div>
+        </div>
+    </div>
+
+    {% if not jornada_abierta and not permitir_correccion %}
+        <div class="empty-state">La jornada ya esta cerrada para registro normal. Si necesitas una regularizacion excepcional, vuelve a cargarla en modo Correccion administrativa.</div>
+    {% else %}
+        <form method="POST" style="margin-top: 20px;">
+            <input type="hidden" name="usuario_id" value="{{ usuario_seleccionado.id }}">
+            <input type="hidden" name="jornada_id" value="{{ jornada_seleccionada.id }}">
+            <input type="hidden" name="modo_registro" value="{{ 'correccion' if permitir_correccion else 'registro' }}">
+
+            <div class="form-group">
+                <label>Motivo opcional</label>
+                <input type="text" name="motivo" value="{{ motivo_valor }}" placeholder="Recibido por WhatsApp, participante adulto mayor, correccion manual, etc.">
+            </div>
+
+            <div class="grid-2">
+                {% for partido in partidos %}
+                    {% set partido_estado = estado_partidos.get(partido.id) %}
+                    {% set pronostico = pronosticos_dict.get(partido.id) %}
+                    <div class="match-card">
+                        <div class="match-title">{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</div>
+                        <div class="match-meta">
+                            {{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}
+                            {% if partido.hora_est %} · Hora Ecuador {{ partido.hora_est }}{% endif %}
+                            {% if not partido.hora_est and partido.hora_local %} · Hora Ecuador {{ partido.hora_local }}{% endif %}
+                            <br>
+                            {{ partido.estadio or "" }}{% if partido.estadio and partido.ciudad %} - {% endif %}{{ partido.ciudad or "" }}
+                        </div>
+
+                        {% if partido_estado and partido_estado.ya_inicio and not permitir_correccion %}
+                            <div class="mobile-data-box" style="margin-bottom: 14px;">
+                                <div class="mobile-label">Estado del pronostico</div>
+                                <div class="mobile-value">Este partido ya inicio en hora Ecuador y no se puede editar en registro normal.</div>
+                            </div>
+                        {% elif partido_estado and partido_estado.ya_inicio and permitir_correccion %}
+                            <div class="mobile-data-box" style="margin-bottom: 14px;">
+                                <div class="mobile-label">Estado del pronostico</div>
+                                <div class="mobile-value">Partido ya iniciado. Estas en modo Correccion administrativa y quedara auditado.</div>
+                            </div>
+                        {% endif %}
+
+                        <div class="score-row">
+                            <div class="match-score-field">
+                                <label for="goles_local_{{ partido.id }}">{{ partido.equipo_local.nombre }}</label>
+                                <input
+                                    id="goles_local_{{ partido.id }}"
+                                    type="number"
+                                    name="goles_local_{{ partido.id }}"
+                                    min="0"
+                                    inputmode="numeric"
+                                    value="{{ pronostico.goles_local_pred if pronostico else '' }}"
+                                    {% if partido_estado and partido_estado.ya_inicio and not permitir_correccion %}disabled{% endif %}
+                                >
+                            </div>
+                            <div class="match-score-field">
+                                <label for="goles_visitante_{{ partido.id }}">{{ partido.equipo_visitante.nombre }}</label>
+                                <input
+                                    id="goles_visitante_{{ partido.id }}"
+                                    type="number"
+                                    name="goles_visitante_{{ partido.id }}"
+                                    min="0"
+                                    inputmode="numeric"
+                                    value="{{ pronostico.goles_visitante_pred if pronostico else '' }}"
+                                    {% if partido_estado and partido_estado.ya_inicio and not permitir_correccion %}disabled{% endif %}
+                                >
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="actions">
+                <button type="submit" class="btn btn-primary">
+                    {% if permitir_correccion %}Guardar correccion administrativa{% else %}Guardar apuesta por participante{% endif %}
+                </button>
+                <a class="btn btn-secondary" href="{{ url_for('admin.dashboard') }}">Volver al panel</a>
+            </div>
+        </form>
+    {% endif %}
+{% endif %}
+{% endblock %}

@@ -1,6 +1,7 @@
 from decimal import Decimal
-from app.models import PagoJornada, JornadaGrupo, Apuesta, PozoAcumulado, MovimientoAcumulado
+from app.models import PagoJornada, JornadaGrupo, PozoAcumulado, MovimientoAcumulado
 from app.extensions import db
+from app.utils.ranking import obtener_apuestas_ordenadas_jornada
 
 
 def recalcular_pozo_jornada(jornada_id):
@@ -46,12 +47,7 @@ def detectar_ganador_jornada(jornada_id):
     if not jornada:
         return None
 
-    apuestas = (
-        Apuesta.query
-        .filter_by(jornada_grupo_id=jornada.id)
-        .order_by(Apuesta.puntos_total.desc(), Apuesta.id.asc())
-        .all()
-    )
+    apuestas = obtener_apuestas_ordenadas_jornada(jornada.id)
 
     if not apuestas:
         jornada.ganador_apuesta_id = None
@@ -59,19 +55,38 @@ def detectar_ganador_jornada(jornada_id):
         db.session.flush()
         return None
 
-    mayor_puntaje = apuestas[0].puntos_total
-    mejores = [a for a in apuestas if a.puntos_total == mayor_puntaje]
+    ganador = apuestas[0]
+    llave_ganadora = (
+        ganador.puntos_total,
+        ganador.exactos,
+        ganador.aciertos_resultado,
+        (ganador.usuario.nombres or "").strip().lower(),
+        (ganador.usuario.apellidos or "").strip().lower(),
+    )
+    empatados_totales = [
+        apuesta
+        for apuesta in apuestas
+        if (
+            apuesta.puntos_total,
+            apuesta.exactos,
+            apuesta.aciertos_resultado,
+            (apuesta.usuario.nombres or "").strip().lower(),
+            (apuesta.usuario.apellidos or "").strip().lower(),
+        ) == llave_ganadora
+    ]
 
-    if len(mejores) == 1:
-        jornada.ganador_apuesta_id = mejores[0].id
-        jornada.estado_ganador = "definido"
+    # Si incluso despues de los criterios oficiales hay empate absoluto,
+    # la jornada queda marcada como empatada y no se asigna ganador unico.
+    if len(empatados_totales) > 1:
+        jornada.ganador_apuesta_id = None
+        jornada.estado_ganador = "empatado"
         db.session.flush()
-        return mejores[0]
+        return None
 
-    jornada.ganador_apuesta_id = None
-    jornada.estado_ganador = "empatado"
+    jornada.ganador_apuesta_id = ganador.id
+    jornada.estado_ganador = "definido"
     db.session.flush()
-    return None
+    return ganador
 
 
 def obtener_pozo_final_activo():

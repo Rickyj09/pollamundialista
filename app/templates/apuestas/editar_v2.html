@@ -19,8 +19,8 @@
         <div class="summary-value">{{ jornada.grupo.nombre }} · Jornada {{ jornada.numero_jornada }}</div>
     </div>
     <div class="summary-item">
-        <div class="summary-label">Cierre</div>
-        <div class="summary-value">{{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}</div>
+        <div class="summary-label">Cierre operativo</div>
+        <div class="summary-value">Cada partido se bloquea al iniciar en hora Ecuador.</div>
     </div>
 </div>
 
@@ -28,22 +28,32 @@
     <div class="grid-2">
         {% for partido in partidos %}
             {% set pronostico = pronosticos_dict.get(partido.id) %}
+            {% set partido_estado = estado_partidos.get(partido.id) %}
             <div class="match-card">
                 <div class="match-title">{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</div>
                 <div class="match-meta">
                     {{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}
-                    {% if partido.hora_est %} · EST {{ partido.hora_est }}{% endif %}
-                    {% if partido.hora_local %} · Local {{ partido.hora_local }}{% endif %}<br>
+                    {% if partido.hora_est %} · Hora Ecuador {{ partido.hora_est }}{% endif %}
+                    {% if not partido.hora_est and partido.hora_local %} · Hora Ecuador {{ partido.hora_local }}{% endif %}<br>
                     {{ partido.estadio or "" }}{% if partido.estadio and partido.ciudad %} - {% endif %}{{ partido.ciudad or "" }}
                 </div>
+                {% if partido_estado and partido_estado.ya_inicio %}
+                <div class="mobile-data-box" style="margin-bottom: 14px;">
+                    <div class="mobile-label">Estado del pronostico</div>
+                    <div class="mobile-value">
+                        Este partido ya inicio, pronostico cerrado.
+                        {% if not pronostico %} Sin pronostico: 0 puntos.{% endif %}
+                    </div>
+                </div>
+                {% endif %}
                 <div class="score-row">
                     <div class="match-score-field">
                         <label for="goles_local_{{ partido.id }}">{{ partido.equipo_local.nombre }}</label>
-                        <input id="goles_local_{{ partido.id }}" type="number" name="goles_local_{{ partido.id }}" min="0" required value="{{ pronostico.goles_local_pred if pronostico else '' }}">
+                        <input id="goles_local_{{ partido.id }}" type="number" name="goles_local_{{ partido.id }}" min="0" value="{{ pronostico.goles_local_pred if pronostico else '' }}" {% if partido_estado and partido_estado.ya_inicio %}readonly disabled{% endif %}>
                     </div>
                     <div class="match-score-field">
                         <label for="goles_visitante_{{ partido.id }}">{{ partido.equipo_visitante.nombre }}</label>
-                        <input id="goles_visitante_{{ partido.id }}" type="number" name="goles_visitante_{{ partido.id }}" min="0" required value="{{ pronostico.goles_visitante_pred if pronostico else '' }}">
+                        <input id="goles_visitante_{{ partido.id }}" type="number" name="goles_visitante_{{ partido.id }}" min="0" value="{{ pronostico.goles_visitante_pred if pronostico else '' }}" {% if partido_estado and partido_estado.ya_inicio %}readonly disabled{% endif %}>
                     </div>
                 </div>
             </div>

@@ -52,7 +52,7 @@
                         {% endfor %}
                     </td>
                     <td>
-                        {% if apuesta.jornada_grupo.estado == "abierta" %}
+                        {% if apuesta.jornada_grupo.esta_abierta_para_apuestas() %}
                             <a class="btn btn-warning" href="{{ url_for('apuestas.editar_apuesta', apuesta_id=apuesta.id) }}">
                                 Editar
                             </a>
@@ -125,7 +125,7 @@
                 {% endfor %}
             </div>
 
-            {% if apuesta.jornada_grupo.estado == "abierta" %}
+            {% if apuesta.jornada_grupo.esta_abierta_para_apuestas() %}
                 <a class="btn btn-warning" href="{{ url_for('apuestas.editar_apuesta', apuesta_id=apuesta.id) }}">
                     Editar apuesta
                 </a>

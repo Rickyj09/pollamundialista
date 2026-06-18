@@ -1,5 +1,9 @@
 from datetime import datetime
 from app.extensions import db
+from app.utils.timezone import ECUADOR_TIMEZONE, now_ecuador_naive
+
+
+APP_TIMEZONE = ECUADOR_TIMEZONE
 
 
 class Partido(db.Model):
@@ -70,6 +74,29 @@ class Partido(db.Model):
         "Equipo",
         foreign_keys=[equipo_visitante_id]
     )
+
+    def hora_referencia_apuestas(self):
+        # Las horas cargadas se interpretan como hora oficial de Ecuador.
+        return (self.hora_est or self.hora_local or "").strip() or None
+
+    def inicio_programado(self):
+        hora_referencia = self.hora_referencia_apuestas()
+        if not self.fecha_partido or not hora_referencia:
+            return None
+
+        try:
+            hora = datetime.strptime(hora_referencia, "%H:%M").time()
+        except ValueError:
+            return None
+
+        return datetime.combine(self.fecha_partido, hora)
+
+    def ya_inicio(self, ahora=None):
+        ahora = ahora or now_ecuador_naive()
+        inicio = self.inicio_programado()
+        if inicio is None:
+            return False
+        return ahora >= inicio
 
     def __repr__(self):
         return f"<Partido {self.id}: {self.equipo_local_id} vs {self.equipo_visitante_id}>"

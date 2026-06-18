@@ -1,0 +1,18 @@
+from decimal import Decimal
+
+
+VALOR_APUESTA_OFICIAL = Decimal("5.00")
+VALOR_PREMIO_JORNADA_OFICIAL = Decimal("4.00")
+VALOR_ACUMULADO_OFICIAL = Decimal("0.50")
+VALOR_UTILIDAD_OFICIAL = Decimal("0.50")
+
+SUMA_DISTRIBUCION_OFICIAL = (
+    VALOR_PREMIO_JORNADA_OFICIAL
+    + VALOR_ACUMULADO_OFICIAL
+    + VALOR_UTILIDAD_OFICIAL
+)
+
+if SUMA_DISTRIBUCION_OFICIAL != VALOR_APUESTA_OFICIAL:
+    raise ValueError(
+        "La distribucion oficial de la apuesta no coincide con el valor total definido."
+    )

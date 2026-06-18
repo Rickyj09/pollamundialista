@@ -1,5 +1,11 @@
 from datetime import datetime
 from app.extensions import db
+from app.constants import (
+    VALOR_ACUMULADO_OFICIAL,
+    VALOR_APUESTA_OFICIAL,
+    VALOR_PREMIO_JORNADA_OFICIAL,
+    VALOR_UTILIDAD_OFICIAL,
+)
 
 
 class Apuesta(db.Model):
@@ -20,10 +26,10 @@ class Apuesta(db.Model):
         index=True,
     )
 
-    valor_apostado = db.Column(db.Numeric(10, 2), nullable=False, default=3.00)
-    valor_premio_jornada = db.Column(db.Numeric(10, 2), nullable=False, default=2.00)
-    valor_aporte_acumulado = db.Column(db.Numeric(10, 2), nullable=False, default=0.50)
-    valor_utilidad = db.Column(db.Numeric(10, 2), nullable=False, default=0.50)
+    valor_apostado = db.Column(db.Numeric(10, 2), nullable=False, default=VALOR_APUESTA_OFICIAL)
+    valor_premio_jornada = db.Column(db.Numeric(10, 2), nullable=False, default=VALOR_PREMIO_JORNADA_OFICIAL)
+    valor_aporte_acumulado = db.Column(db.Numeric(10, 2), nullable=False, default=VALOR_ACUMULADO_OFICIAL)
+    valor_utilidad = db.Column(db.Numeric(10, 2), nullable=False, default=VALOR_UTILIDAD_OFICIAL)
 
     estado_pago = db.Column(db.String(20), nullable=False, default="pendiente")
     # pendiente / pagado / anulado
