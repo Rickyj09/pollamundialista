@@ -131,6 +131,17 @@ def registrar_apuesta_por_usuario():
             flash("Debes seleccionar una jornada valida.", "danger")
             return redirect(url_for("admin.registrar_apuesta_por_usuario"))
 
+        if not partidos:
+            flash("La jornada seleccionada no tiene partidos habilitados para la Polla Mundialista.", "warning")
+            return redirect(
+                url_for(
+                    "admin.registrar_apuesta_por_usuario",
+                    usuario_id=usuario_seleccionado.id,
+                    jornada_id=jornada_seleccionada.id,
+                    modo_registro=modo_registro,
+                )
+            )
+
         if not jornada_abierta and not permitir_correccion:
             flash(
                 "La jornada ya esta cerrada en hora Ecuador. Usa Correccion administrativa si necesitas dejar constancia excepcional.",

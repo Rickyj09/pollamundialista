@@ -1,18 +1,29 @@
 from flask import render_template, request
+from sqlalchemy.orm import selectinload, joinedload
 from app.blueprints.resultados import resultados_bp
-from app.models import JornadaGrupo, PozoAcumulado
+from app.models import JornadaGrupo, PozoAcumulado, Partido
 from app.utils.ranking import obtener_apuestas_ordenadas_jornada, obtener_ranking_general
+from app.utils.apuestas import filtrar_partidos_sudamericanos
 
 
 @resultados_bp.route("/")
 def tabla():
     jornada_id = request.args.get("jornada_id", type=int)
 
-    jornadas = (
+    jornadas_cargadas = (
         JornadaGrupo.query
+        .options(
+            selectinload(JornadaGrupo.partidos).joinedload(Partido.equipo_local),
+            selectinload(JornadaGrupo.partidos).joinedload(Partido.equipo_visitante),
+            joinedload(JornadaGrupo.grupo),
+        )
         .order_by(JornadaGrupo.fecha_cierre.asc(), JornadaGrupo.id.asc())
         .all()
     )
+    jornadas = [
+        jornada for jornada in jornadas_cargadas
+        if filtrar_partidos_sudamericanos(jornada.partidos)
+    ]
 
     apuestas = []
     jornada_seleccionada = None

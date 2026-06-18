@@ -2,16 +2,25 @@ from flask import render_template
 from sqlalchemy.orm import joinedload, selectinload
 from app.blueprints.jornadas import jornadas_bp
 from app.models import JornadaGrupo, Apuesta, Partido, Pronostico, Usuario
+from app.utils.apuestas import filtrar_partidos_sudamericanos
 
 
 @jornadas_bp.route("/")
 def listar():
-    jornadas = (
+    jornadas_cargadas = (
         JornadaGrupo.query
-        .options(joinedload(JornadaGrupo.grupo))
+        .options(
+            joinedload(JornadaGrupo.grupo),
+            selectinload(JornadaGrupo.partidos).joinedload(Partido.equipo_local),
+            selectinload(JornadaGrupo.partidos).joinedload(Partido.equipo_visitante),
+        )
         .order_by(JornadaGrupo.fecha_cierre.asc(), JornadaGrupo.id.asc())
         .all()
     )
+    jornadas = [
+        jornada for jornada in jornadas_cargadas
+        if filtrar_partidos_sudamericanos(jornada.partidos)
+    ]
     return render_template("jornadas/listar_v2.html", jornadas=jornadas)
 
 
@@ -29,7 +38,7 @@ def detalle(jornada_id):
     )
 
     partidos = sorted(
-        jornada.partidos,
+        filtrar_partidos_sudamericanos(jornada.partidos),
         key=lambda partido: (
             partido.fecha_partido,
             partido.numero_calendario or 0,

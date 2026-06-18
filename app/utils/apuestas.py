@@ -1,6 +1,22 @@
 from app.extensions import db
 from app.models import Apuesta, PagoJornada, Pronostico
+from app.constants import EQUIPOS_SUDAMERICANOS_NORMALIZADOS
 from app.utils.timezone import now_ecuador_naive
+
+
+def partido_incluye_equipo_sudamericano(partido):
+    if not partido:
+        return False
+
+    nombres = [
+        ((partido.equipo_local.nombre if partido.equipo_local else "") or "").strip().lower(),
+        ((partido.equipo_visitante.nombre if partido.equipo_visitante else "") or "").strip().lower(),
+    ]
+    return any(nombre in EQUIPOS_SUDAMERICANOS_NORMALIZADOS for nombre in nombres)
+
+
+def filtrar_partidos_sudamericanos(partidos):
+    return [partido for partido in partidos if partido_incluye_equipo_sudamericano(partido)]
 
 
 def jornada_esta_abierta(jornada, ahora=None):
@@ -17,8 +33,9 @@ def usuario_tiene_pago_confirmado(usuario_id, jornada_id):
 
 
 def obtener_partidos_ordenados(jornada):
+    partidos_visibles = filtrar_partidos_sudamericanos(jornada.partidos)
     return sorted(
-        jornada.partidos,
+        partidos_visibles,
         key=lambda partido: (partido.fecha_partido, partido.numero_calendario or 0, partido.id),
     )
 

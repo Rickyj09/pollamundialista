@@ -32,6 +32,10 @@ def nueva_apuesta(jornada_id):
     jornada = JornadaGrupo.query.get_or_404(jornada_id)
     partidos = obtener_partidos_ordenados(jornada)
 
+    if not partidos:
+        flash("Esta jornada no tiene partidos habilitados para la Polla Mundialista.", "warning")
+        return redirect(url_for("jornadas.listar"))
+
     if not jornada_esta_abierta(jornada):
         flash("Esta jornada ya no tiene partidos disponibles para apostar.", "warning")
         return redirect(url_for("jornadas.listar"))
@@ -53,6 +57,10 @@ def nueva_apuesta(jornada_id):
 def guardar_apuesta(jornada_id):
     jornada = JornadaGrupo.query.get_or_404(jornada_id)
     partidos = obtener_partidos_ordenados(jornada)
+
+    if not partidos:
+        flash("Esta jornada no tiene partidos habilitados para la Polla Mundialista.", "warning")
+        return redirect(url_for("jornadas.listar"))
 
     if not jornada_esta_abierta(jornada):
         flash("La jornada ya no tiene partidos disponibles para apostar.", "danger")
@@ -116,6 +124,10 @@ def editar_apuesta(apuesta_id):
     jornada = apuesta.jornada_grupo
     partidos = obtener_partidos_ordenados(jornada)
 
+    if not partidos:
+        flash("Esta jornada no tiene partidos habilitados para la Polla Mundialista.", "warning")
+        return redirect(url_for("apuestas.mis_apuestas"))
+
     if not jornada_esta_abierta(jornada):
         flash("La apuesta ya no se puede editar porque todos los partidos editables de la jornada ya iniciaron.", "warning")
         return redirect(url_for("apuestas.mis_apuestas"))
@@ -143,6 +155,10 @@ def actualizar_apuesta(apuesta_id):
 
     jornada = apuesta.jornada_grupo
     partidos = obtener_partidos_ordenados(jornada)
+
+    if not partidos:
+        flash("Esta jornada no tiene partidos habilitados para la Polla Mundialista.", "warning")
+        return redirect(url_for("apuestas.mis_apuestas"))
 
     if not jornada_esta_abierta(jornada):
         flash("La apuesta ya no se puede editar porque todos los partidos editables de la jornada ya iniciaron.", "danger")

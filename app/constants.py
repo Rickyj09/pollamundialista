@@ -1,5 +1,15 @@
 from decimal import Decimal
 
+EQUIPOS_SUDAMERICANOS = (
+    "Argentina",
+    "Brasil",
+    "Colombia",
+    "Ecuador",
+    "Paraguay",
+    "Uruguay",
+)
+
+EQUIPOS_SUDAMERICANOS_NORMALIZADOS = {nombre.strip().lower() for nombre in EQUIPOS_SUDAMERICANOS}
 
 VALOR_APUESTA_OFICIAL = Decimal("5.00")
 VALOR_PREMIO_JORNADA_OFICIAL = Decimal("4.00")
