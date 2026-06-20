@@ -1,10 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Ranking general{% endblock %}
+{% block title %}{{ ranking_title or "Ranking general" }}{% endblock %}
 
 {% block content %}
-<h2 class="page-title">Ranking general</h2>
-<p class="muted">Acumulado total por jugador, sumando puntos, exactos y aciertos de resultado de todas las jornadas.</p>
+<h2 class="page-title">{{ ranking_title or "Ranking general" }}</h2>
+<p class="muted">{{ ranking_description or "Acumulado total por jugador, sumando puntos, exactos y aciertos de resultado de todas las jornadas." }}</p>
+
+{% if ranking_scope_ids %}
+    <div class="match-summary" style="margin-bottom: 18px;">
+        <div class="summary-item">
+            <div class="summary-label">Alcance</div>
+            <div class="summary-value">{{ ranking_scope_label }}</div>
+        </div>
+        <div class="summary-item">
+            <div class="summary-label">Jornadas incluidas</div>
+            <div class="summary-value">{{ ranking_scope_ids|join(", ") }}</div>
+        </div>
+    </div>
+{% endif %}
 
 {% if ranking %}
     <div class="table-wrap desktop-only">
@@ -63,6 +76,8 @@
 {% endif %}
 
 <div class="actions">
+    <a class="btn btn-secondary" href="{{ url_for('resultados.ranking_general') }}">Ver ranking general</a>
+    <a class="btn btn-secondary" href="{{ url_for('resultados.ranking_jornada_2') }}">Ver ranking Jornada 2</a>
     <a class="btn btn-secondary" href="{{ url_for('resultados.tabla') }}">Ver ranking por jornada</a>
     <a class="btn btn-primary" href="{{ url_for('jornadas.listar') }}">Ver jornadas</a>
 </div>

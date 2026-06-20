@@ -89,6 +89,38 @@ def obtener_ranking_general():
     )
 
 
+def obtener_ranking_por_jornadas(jornada_ids):
+    jornada_ids = tuple(jornada_ids or ())
+    if not jornada_ids:
+        return []
+
+    return (
+        db.session.query(
+            Usuario.id.label("usuario_id"),
+            Usuario.nombres,
+            Usuario.apellidos,
+            func.coalesce(func.sum(Apuesta.puntos_total), 0).label("puntos"),
+            func.coalesce(func.sum(Apuesta.exactos), 0).label("exactos"),
+            func.coalesce(func.sum(Apuesta.aciertos_resultado), 0).label("aciertos_resultado"),
+        )
+        .join(Apuesta, Apuesta.usuario_id == Usuario.id)
+        .filter(
+            Usuario.es_admin.is_(False),
+            Usuario.activo.is_(True),
+            Apuesta.jornada_grupo_id.in_(jornada_ids),
+        )
+        .group_by(Usuario.id, Usuario.nombres, Usuario.apellidos)
+        .order_by(
+            func.coalesce(func.sum(Apuesta.puntos_total), 0).desc(),
+            func.coalesce(func.sum(Apuesta.exactos), 0).desc(),
+            func.coalesce(func.sum(Apuesta.aciertos_resultado), 0).desc(),
+            Usuario.nombres.asc(),
+            Usuario.apellidos.asc(),
+        )
+        .all()
+    )
+
+
 def recalcular_ranking_general():
     jornada_ids = [
         jornada_id for (jornada_id,) in db.session.query(JornadaGrupo.id).order_by(JornadaGrupo.id.asc()).all()

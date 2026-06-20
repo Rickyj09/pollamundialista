@@ -2,7 +2,12 @@ from flask import render_template, request
 from sqlalchemy.orm import selectinload, joinedload
 from app.blueprints.resultados import resultados_bp
 from app.models import JornadaGrupo, PozoAcumulado, Partido
-from app.utils.ranking import obtener_apuestas_ordenadas_jornada, obtener_ranking_general
+from app.constants import JORNADA_2_JORNADA_GRUPO_IDS
+from app.utils.ranking import (
+    obtener_apuestas_ordenadas_jornada,
+    obtener_ranking_general,
+    obtener_ranking_por_jornadas,
+)
 from app.utils.apuestas import filtrar_partidos_sudamericanos
 
 
@@ -49,5 +54,24 @@ def ranking_general():
     return render_template(
         "resultados/general_v2.html",
         ranking=ranking,
-        pozo_final=pozo_final
+        pozo_final=pozo_final,
+        ranking_title="Ranking general",
+        ranking_description="Acumulado total por jugador, sumando puntos, exactos y aciertos de resultado de todas las jornadas.",
+        ranking_scope_label="General acumulado",
+        ranking_scope_ids=None,
+    )
+
+
+@resultados_bp.route("/jornada-2")
+def ranking_jornada_2():
+    ranking = obtener_ranking_por_jornadas(JORNADA_2_JORNADA_GRUPO_IDS)
+
+    return render_template(
+        "resultados/general_v2.html",
+        ranking=ranking,
+        pozo_final=None,
+        ranking_title="Ranking Jornada 2",
+        ranking_description="Ranking independiente de Jornada 2. Solo suma apuestas de los jornada_grupo_id 2, 5, 8, 11, 14 y 17.",
+        ranking_scope_label="Jornada 2",
+        ranking_scope_ids=JORNADA_2_JORNADA_GRUPO_IDS,
     )
