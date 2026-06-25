@@ -2,7 +2,7 @@ from flask import render_template, request
 from sqlalchemy.orm import selectinload, joinedload
 from app.blueprints.resultados import resultados_bp
 from app.models import JornadaGrupo, PozoAcumulado, Partido
-from app.constants import JORNADA_2_JORNADA_GRUPO_IDS
+from app.constants import JORNADA_2_JORNADA_GRUPO_IDS, JORNADA_3_JORNADA_GRUPO_IDS
 from app.utils.ranking import (
     obtener_apuestas_ordenadas_jornada,
     obtener_ranking_general,
@@ -74,4 +74,19 @@ def ranking_jornada_2():
         ranking_description="Ranking independiente de Jornada 2. Solo suma apuestas de los jornada_grupo_id 2, 5, 8, 11, 14 y 17.",
         ranking_scope_label="Jornada 2",
         ranking_scope_ids=JORNADA_2_JORNADA_GRUPO_IDS,
+    )
+
+
+@resultados_bp.route("/jornada-3")
+def ranking_jornada_3():
+    ranking = obtener_ranking_por_jornadas(JORNADA_3_JORNADA_GRUPO_IDS)
+
+    return render_template(
+        "resultados/general_v2.html",
+        ranking=ranking,
+        pozo_final=None,
+        ranking_title="Ranking Jornada 3",
+        ranking_description="Ranking independiente de Jornada 3. Solo suma apuestas de los jornada_grupo_id 3, 6, 9, 12, 15 y 18.",
+        ranking_scope_label="Jornada 3",
+        ranking_scope_ids=JORNADA_3_JORNADA_GRUPO_IDS,
     )
