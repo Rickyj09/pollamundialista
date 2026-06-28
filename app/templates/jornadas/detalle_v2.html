@@ -38,9 +38,17 @@
 
 <div class="inline-actions">
     {% if jornada.esta_abierta_para_apuestas() %}
-        <a class="btn btn-primary" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">Registrar apuesta</a>
+        {% if jornada.nombre == "16avos de final" %}
+            <a class="btn btn-primary" href="{{ url_for('apuestas.listar_16avos') }}">Registrar pronosticos</a>
+        {% else %}
+            <a class="btn btn-primary" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">Registrar apuesta</a>
+        {% endif %}
     {% else %}
-        <span class="badge badge-closed">Pronosticos disponibles</span>
+        {% if jornada.nombre == "16avos de final" %}
+            <a class="btn btn-outline-primary" href="{{ url_for('apuestas.listar_16avos') }}">Ver pronosticos</a>
+        {% else %}
+            <span class="badge badge-closed">Pronosticos disponibles</span>
+        {% endif %}
     {% endif %}
     <a class="btn btn-secondary" href="{{ url_for('jornadas.listar') }}">Volver a jornadas</a>
 </div>

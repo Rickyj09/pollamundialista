@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}16avos de final{% endblock %}
+
+{% block content %}
+<h2 class="page-title">16avos de final</h2>
+<p class="muted">La apuesta sigue siendo unica para toda la fase por USD 5.00, pero ahora puedes registrar tus pronosticos partido por partido antes de que cada encuentro inicie en hora Ecuador.</p>
+
+<div class="empty-state" style="margin-bottom: 16px;">
+    Para esta fase se usa el marcador final oficial del partido, incluyendo alargue y penales si aplica.
+</div>
+
+<div class="match-summary">
+    <div class="summary-item">
+        <div class="summary-label">Fase</div>
+        <div class="summary-value">{{ jornada.nombre }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Valor total</div>
+        <div class="summary-value">${{ "%.2f"|format(jornada.valor_apuesta|float) }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Pronosticos guardados</div>
+        <div class="summary-value">{{ pronosticos_dict|length }} / {{ jornada.partidos|length }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Estado de pago</div>
+        <div class="summary-value">
+            {% if apuesta_pagada %}
+                Pagado
+            {% elif apuesta %}
+                Pendiente
+            {% else %}
+                Sin registrar
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% if apuesta_pagada %}
+<div class="empty-state" style="margin-bottom: 20px;">
+    Pago confirmado: participas en el pozo de premio.
+</div>
+{% else %}
+<div class="empty-state" style="margin-bottom: 20px;">
+    Pago pendiente: puedes pronosticar, pero entraras al premio cuando se confirme el pago.
+</div>
+{% endif %}
+
+{% for bloque in bloques_por_fecha %}
+<div class="section-block" style="margin-bottom: 24px;">
+    <h3 class="section-title">{{ bloque.fecha.strftime("%Y-%m-%d") if bloque.fecha else "Sin fecha" }}</h3>
+
+    <div class="table-wrap desktop-only">
+        <table>
+            <thead>
+                <tr>
+                    <th>Hora Ecuador</th>
+                    <th>Partido</th>
+                    <th>Estado</th>
+                    <th>Pronostico</th>
+                    <th>Accion</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for partido in bloque.partidos %}
+                {% set estado = estado_partidos.get(partido.id, {}) %}
+                {% set pronostico = pronosticos_dict.get(partido.id) %}
+                <tr>
+                    <td>{{ partido.hora_est or partido.hora_local or "" }}</td>
+                    <td>{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</td>
+                    <td>
+                        {% if estado.ya_inicio %}
+                            {% if pronostico %}
+                                Cerrado
+                            {% else %}
+                                Cerrado sin pronostico
+                            {% endif %}
+                        {% elif pronostico %}
+                            Pronosticado
+                        {% else %}
+                            Pendiente de pronosticar
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if pronostico %}
+                            {{ pronostico.goles_local_pred }} - {{ pronostico.goles_visitante_pred }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if estado.ya_inicio %}
+                            {% if pronostico %}
+                                <a class="btn btn-outline-primary" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Ver pronostico</a>
+                            {% else %}
+                                <span class="badge badge-closed">Cerrado</span>
+                            {% endif %}
+                        {% elif pronostico %}
+                            <a class="btn btn-warning" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Editar pronostico</a>
+                        {% else %}
+                            <a class="btn btn-primary" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Pronosticar</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mobile-stack-cards mobile-only">
+        {% for partido in bloque.partidos %}
+        {% set estado = estado_partidos.get(partido.id, {}) %}
+        {% set pronostico = pronosticos_dict.get(partido.id) %}
+        <div class="mobile-card">
+            <div class="mobile-card-header">
+                <div>
+                    <h3 class="mobile-card-title">{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</h3>
+                    <div class="mobile-card-subtitle">Hora Ecuador {{ partido.hora_est or partido.hora_local or "" }}</div>
+                </div>
+                <div>
+                    {% if estado.ya_inicio %}
+                        <span class="badge badge-closed">Cerrado</span>
+                    {% elif pronostico %}
+                        <span class="badge badge-open">Pronosticado</span>
+                    {% else %}
+                        <span class="badge badge-closed">Pendiente</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mobile-data-grid">
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Estado</div>
+                    <div class="mobile-value">
+                        {% if estado.ya_inicio %}
+                            {% if pronostico %}Cerrado{% else %}Cerrado sin pronostico{% endif %}
+                        {% elif pronostico %}
+                            Pronosticado
+                        {% else %}
+                            Pendiente de pronosticar
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Marcador</div>
+                    <div class="mobile-value">
+                        {% if pronostico %}
+                            {{ pronostico.goles_local_pred }} - {{ pronostico.goles_visitante_pred }}
+                        {% else %}
+                            Sin registro
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            {% if estado.ya_inicio %}
+                {% if pronostico %}
+                    <a class="btn btn-outline-primary btn-block" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Ver pronostico</a>
+                {% else %}
+                    <div class="muted" style="font-weight: 700;">Cerrado sin pronostico</div>
+                {% endif %}
+            {% elif pronostico %}
+                <a class="btn btn-warning btn-block" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Editar pronostico</a>
+            {% else %}
+                <a class="btn btn-primary btn-block" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Pronosticar</a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endfor %}
+
+<div class="actions">
+    <a href="{{ url_for('jornadas.detalle', jornada_id=jornada.id) }}" class="btn btn-secondary">Ver detalle de jornada</a>
+    <a href="{{ url_for('apuestas.mis_apuestas') }}" class="btn btn-outline-primary">Mis apuestas</a>
+</div>
+{% endblock %}

@@ -7,6 +7,7 @@ from app.constants import (
     JORNADA_3_JORNADA_GRUPO_IDS,
     JORNADA_16AVOS_NOMBRE,
 )
+from app.utils.apuestas import apuesta_esta_pagada
 from app.utils.ranking import (
     obtener_apuestas_ordenadas_jornada,
     obtener_ranking_general,
@@ -101,6 +102,14 @@ def ranking_16avos():
     jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_16AVOS_NOMBRE).first()
     jornada_ids = (jornada.id,) if jornada else ()
     ranking = obtener_ranking_por_jornadas(jornada_ids)
+    estados_pago_por_usuario = {}
+
+    if jornada:
+        for apuesta in obtener_apuestas_ordenadas_jornada(jornada.id):
+            estados_pago_por_usuario[apuesta.usuario_id] = {
+                "estado": (apuesta.estado_pago or "").strip().lower(),
+                "pagada": apuesta_esta_pagada(apuesta.estado_pago),
+            }
 
     return render_template(
         "resultados/general_v2.html",
@@ -110,4 +119,6 @@ def ranking_16avos():
         ranking_description="Ranking independiente de 16avos de final. Solo suma la apuesta unica de esta fase.",
         ranking_scope_label="16avos de final",
         ranking_scope_ids=jornada_ids,
+        mostrar_estado_pago=True,
+        estados_pago_por_usuario=estados_pago_por_usuario,
     )

@@ -2,6 +2,7 @@ from decimal import Decimal
 from app.models import PagoJornada, JornadaGrupo, PozoAcumulado, MovimientoAcumulado
 from app.extensions import db
 from app.utils.ranking import obtener_apuestas_ordenadas_jornada
+from app.utils.apuestas import apuesta_esta_pagada
 
 
 def recalcular_pozo_jornada(jornada_id):
@@ -47,7 +48,11 @@ def detectar_ganador_jornada(jornada_id):
     if not jornada:
         return None
 
-    apuestas = obtener_apuestas_ordenadas_jornada(jornada.id)
+    apuestas = [
+        apuesta
+        for apuesta in obtener_apuestas_ordenadas_jornada(jornada.id)
+        if apuesta_esta_pagada(apuesta.estado_pago)
+    ]
 
     if not apuestas:
         jornada.ganador_apuesta_id = None

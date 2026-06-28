@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Pronostico de 16avos{% endblock %}
+
+{% block content %}
+<h2 class="page-title">16avos de final</h2>
+<p class="muted">Ingresa o revisa el pronostico de este partido. El bloqueo usa la hora oficial de Ecuador.</p>
+
+<div class="match-summary">
+    <div class="summary-item">
+        <div class="summary-label">Partido</div>
+        <div class="summary-value">{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Fecha</div>
+        <div class="summary-value">{{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Hora Ecuador</div>
+        <div class="summary-value">{{ partido.hora_est or partido.hora_local or "" }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Valor de la fase</div>
+        <div class="summary-value">${{ "%.2f"|format(jornada.valor_apuesta|float) }}</div>
+    </div>
+</div>
+
+<div class="empty-state" style="margin-bottom: 16px;">
+    Para 16avos se registra el marcador final oficial del partido, incluyendo alargue y penales si aplica.
+</div>
+
+{% if apuesta_pagada %}
+<div class="empty-state" style="margin-bottom: 16px;">
+    Pago confirmado: participas en el pozo de premio.
+</div>
+{% else %}
+<div class="empty-state" style="margin-bottom: 16px;">
+    Pago pendiente: puedes pronosticar, pero entraras al premio cuando se confirme el pago.
+</div>
+{% endif %}
+
+{% if partido_cerrado %}
+<div class="empty-state" style="margin-bottom: 16px;">
+    Este partido ya esta cerrado para pronosticos.
+</div>
+{% endif %}
+
+<form method="POST" action="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">
+    <div class="score-row">
+        <div class="match-score-field">
+            <label for="goles_local_{{ partido.id }}">{{ partido.equipo_local.nombre }}</label>
+            <input
+                id="goles_local_{{ partido.id }}"
+                type="number"
+                name="goles_local_{{ partido.id }}"
+                min="0"
+                inputmode="numeric"
+                placeholder="0"
+                value="{{ pronostico.goles_local_pred if pronostico else '' }}"
+                {% if partido_cerrado %}readonly disabled{% endif %}>
+        </div>
+        <div class="match-score-field">
+            <label for="goles_visitante_{{ partido.id }}">{{ partido.equipo_visitante.nombre }}</label>
+            <input
+                id="goles_visitante_{{ partido.id }}"
+                type="number"
+                name="goles_visitante_{{ partido.id }}"
+                min="0"
+                inputmode="numeric"
+                placeholder="0"
+                value="{{ pronostico.goles_visitante_pred if pronostico else '' }}"
+                {% if partido_cerrado %}readonly disabled{% endif %}>
+        </div>
+    </div>
+
+    <div class="actions">
+        {% if not partido_cerrado %}
+            <button type="submit" class="btn btn-primary">
+                {% if pronostico %}Actualizar pronostico{% else %}Guardar pronostico{% endif %}
+            </button>
+        {% endif %}
+        <a href="{{ url_for('apuestas.listar_16avos') }}" class="btn btn-secondary">Volver a 16avos</a>
+    </div>
+</form>
+{% endblock %}

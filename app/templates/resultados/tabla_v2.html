@@ -96,7 +96,7 @@
                         <td>{{ apuesta.exactos }}</td>
                         <td>{{ apuesta.aciertos_resultado }}</td>
                         <td>
-                            {% if apuesta.estado_pago == "pagado" %}
+                            {% if apuesta.estado_pago|lower in ["pagado", "confirmado"] %}
                                 <span class="badge badge-open">Pagado</span>
                             {% else %}
                                 <span class="badge badge-warning">Pendiente</span>
@@ -117,7 +117,7 @@
                         <div class="mobile-card-subtitle">{{ apuesta.usuario.nombre_completo() }}</div>
                     </div>
                     <div>
-                        {% if apuesta.estado_pago == "pagado" %}
+                        {% if apuesta.estado_pago|lower in ["pagado", "confirmado"] %}
                             <span class="badge badge-open">Pagado</span>
                         {% else %}
                             <span class="badge badge-warning">Pendiente</span>

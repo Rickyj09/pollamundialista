@@ -29,6 +29,9 @@
                     <th>Puntos acumulados</th>
                     <th>Exactos</th>
                     <th>Aciertos resultado</th>
+                    {% if mostrar_estado_pago %}
+                    <th>Pago</th>
+                    {% endif %}
                 </tr>
             </thead>
             <tbody>
@@ -39,6 +42,16 @@
                     <td><strong>{{ fila.puntos }}</strong></td>
                     <td>{{ fila.exactos }}</td>
                     <td>{{ fila.aciertos_resultado }}</td>
+                    {% if mostrar_estado_pago %}
+                    {% set estado_pago = estados_pago_por_usuario.get(fila.usuario_id) %}
+                    <td>
+                        {% if estado_pago and estado_pago.pagada %}
+                            <span class="badge badge-open">Pagado</span>
+                        {% else %}
+                            <span class="badge badge-warning">Pendiente</span>
+                        {% endif %}
+                    </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -67,7 +80,33 @@
                     <div class="mobile-label">Aciertos resultado</div>
                     <div class="mobile-value">{{ fila.aciertos_resultado }}</div>
                 </div>
+                {% if mostrar_estado_pago %}
+                {% set estado_pago = estados_pago_por_usuario.get(fila.usuario_id) %}
+                <div class="mobile-data-box">
+                    <div class="mobile-label">Pago</div>
+                    <div class="mobile-value">
+                        {% if estado_pago and estado_pago.pagada %}
+                            Pagado
+                        {% else %}
+                            Pendiente
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
+            {% if mostrar_estado_pago %}
+            {% set estado_pago = estados_pago_por_usuario.get(fila.usuario_id) %}
+            <div class="mobile-data-box" style="margin-top: 10px;">
+                <div class="mobile-label">Premio</div>
+                <div class="mobile-value">
+                    {% if estado_pago and estado_pago.pagada %}
+                        Pago confirmado: participas en el pozo de premio.
+                    {% else %}
+                        Pago pendiente: puedes aparecer en ranking, pero entraras al premio cuando se confirme el pago.
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

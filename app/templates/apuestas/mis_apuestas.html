@@ -35,14 +35,23 @@
                     <td>{{ apuesta.jornada_grupo.numero_jornada }}</td>
                     <td>${{ "%.2f"|format(apuesta.valor_apostado|float) }}</td>
                     <td>
-                        {% if apuesta.estado_pago|lower == "confirmado" %}
-                            <span class="badge badge-open">Confirmado</span>
+                        {% if apuesta.estado_pago|lower in ["pagado", "confirmado"] %}
+                            <span class="badge badge-open">Pagado</span>
                         {% else %}
                             <span class="badge badge-closed">{{ apuesta.estado_pago }}</span>
                         {% endif %}
                     </td>
                     <td>{{ apuesta.puntos_total }}</td>
                     <td>
+                        {% if apuesta.jornada_grupo.nombre == "16avos de final" %}
+                            <div style="margin-bottom: 8px;">
+                                {% if apuesta.estado_pago|lower in ["pagado", "confirmado"] %}
+                                    <span class="badge badge-open">Pago confirmado: participas en el pozo de premio.</span>
+                                {% else %}
+                                    <span class="badge badge-warning">Pago pendiente: puedes pronosticar, pero entraras al premio cuando se confirme el pago.</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
                         {% for pronostico in apuesta.pronosticos %}
                             <div style="margin-bottom: 8px;">
                                 {{ pronostico.partido.equipo_local.nombre }}
@@ -52,10 +61,12 @@
                         {% endfor %}
                     </td>
                     <td>
-                        {% if apuesta.jornada_grupo.esta_abierta_para_apuestas() %}
-                            <a class="btn btn-warning" href="{{ url_for('apuestas.editar_apuesta', apuesta_id=apuesta.id) }}">
-                                Editar
+                        {% if apuesta.jornada_grupo.nombre == "16avos de final" %}
+                            <a class="btn btn-warning" href="{{ url_for('apuestas.listar_16avos') }}">
+                                Ver fase
                             </a>
+                        {% elif apuesta.jornada_grupo.esta_abierta_para_apuestas() %}
+                            <a class="btn btn-warning" href="{{ url_for('apuestas.editar_apuesta', apuesta_id=apuesta.id) }}">Editar</a>
                         {% else %}
                             <span class="muted">Cerrada</span>
                         {% endif %}
@@ -81,8 +92,8 @@
                 </div>
 
                 <div>
-                    {% if apuesta.estado_pago|lower == "confirmado" %}
-                        <span class="badge badge-open">Confirmado</span>
+                    {% if apuesta.estado_pago|lower in ["pagado", "confirmado"] %}
+                        <span class="badge badge-open">Pagado</span>
                     {% else %}
                         <span class="badge badge-closed">{{ apuesta.estado_pago }}</span>
                     {% endif %}
@@ -112,6 +123,18 @@
             </div>
 
             <div style="margin-bottom: 14px;">
+                {% if apuesta.jornada_grupo.nombre == "16avos de final" %}
+                <div class="mobile-data-box" style="margin-bottom: 10px;">
+                    <div class="mobile-label">Estado para premio</div>
+                    <div class="mobile-value">
+                        {% if apuesta.estado_pago|lower in ["pagado", "confirmado"] %}
+                            Pago confirmado: participas en el pozo de premio.
+                        {% else %}
+                            Pago pendiente: puedes pronosticar, pero entraras al premio cuando se confirme el pago.
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
                 <div class="mobile-label" style="margin-bottom: 8px;">Pronósticos</div>
 
                 {% for pronostico in apuesta.pronosticos %}
@@ -125,10 +148,10 @@
                 {% endfor %}
             </div>
 
-            {% if apuesta.jornada_grupo.esta_abierta_para_apuestas() %}
-                <a class="btn btn-warning" href="{{ url_for('apuestas.editar_apuesta', apuesta_id=apuesta.id) }}">
-                    Editar apuesta
-                </a>
+            {% if apuesta.jornada_grupo.nombre == "16avos de final" %}
+                <a class="btn btn-warning" href="{{ url_for('apuestas.listar_16avos') }}">Ver fase</a>
+            {% elif apuesta.jornada_grupo.esta_abierta_para_apuestas() %}
+                <a class="btn btn-warning" href="{{ url_for('apuestas.editar_apuesta', apuesta_id=apuesta.id) }}">Editar apuesta</a>
             {% else %}
                 <div class="muted" style="font-weight: 700;">Jornada cerrada</div>
             {% endif %}

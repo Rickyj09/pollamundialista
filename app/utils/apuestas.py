@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from app.extensions import db
 from app.models import Apuesta, PagoJornada, Pronostico
 from app.constants import EQUIPOS_SUDAMERICANOS_NORMALIZADOS, JORNADA_16AVOS_NOMBRE
@@ -49,12 +51,43 @@ def usuario_tiene_pago_confirmado(usuario_id, jornada_id):
     return pago is not None
 
 
+def estado_apuesta_normalizado(estado_pago):
+    return ((estado_pago or "").strip().lower())
+
+
+def apuesta_esta_pagada(estado_pago):
+    return estado_apuesta_normalizado(estado_pago) in {"pagado", "confirmado"}
+
+
 def obtener_partidos_ordenados(jornada):
     partidos_visibles = obtener_partidos_visibles(jornada)
     return sorted(
         partidos_visibles,
         key=lambda partido: (partido.fecha_partido, partido.numero_calendario or 0, partido.id),
     )
+
+
+def obtener_apuesta_usuario_jornada(usuario_id, jornada_id):
+    return Apuesta.query.filter_by(
+        usuario_id=usuario_id,
+        jornada_grupo_id=jornada_id,
+    ).first()
+
+
+def agrupar_partidos_por_fecha(partidos):
+    bloques = OrderedDict()
+
+    for partido in partidos:
+        fecha = partido.fecha_partido
+        bloques.setdefault(fecha, []).append(partido)
+
+    return [
+        {
+            "fecha": fecha,
+            "partidos": partidos_fecha,
+        }
+        for fecha, partidos_fecha in bloques.items()
+    ]
 
 
 def obtener_estado_partidos(partidos, ahora=None):
@@ -68,7 +101,14 @@ def obtener_estado_partidos(partidos, ahora=None):
     }
 
 
-def construir_apuesta(usuario_id, jornada, metodo_pago="manual", referencia_pago=None):
+def construir_apuesta(
+    usuario_id,
+    jornada,
+    metodo_pago="manual",
+    referencia_pago=None,
+    estado_pago="pagado",
+    fecha_pago=None,
+):
     return Apuesta(
         usuario_id=usuario_id,
         jornada_grupo_id=jornada.id,
@@ -76,12 +116,30 @@ def construir_apuesta(usuario_id, jornada, metodo_pago="manual", referencia_pago
         valor_premio_jornada=jornada.valor_premio_jornada,
         valor_aporte_acumulado=jornada.valor_acumulado,
         valor_utilidad=jornada.valor_utilidad,
-        estado_pago="pagado",
-        fecha_pago=now_ecuador_naive(),
+        estado_pago=estado_pago,
+        fecha_pago=fecha_pago if fecha_pago is not None else (now_ecuador_naive() if estado_pago in {"pagado", "confirmado"} else None),
         metodo_pago=metodo_pago,
         referencia_pago=referencia_pago,
         es_valida_para_acumulado=True,
     )
+
+
+def construir_contexto_16avos(jornada, usuario_id, ahora=None):
+    partidos = obtener_partidos_ordenados(jornada)
+    apuesta = obtener_apuesta_usuario_jornada(usuario_id, jornada.id)
+    pronosticos_dict = {
+        pronostico.partido_id: pronostico
+        for pronostico in (apuesta.pronosticos if apuesta else [])
+    }
+    estado_partidos = obtener_estado_partidos(partidos, ahora=ahora)
+
+    return {
+        "partidos": partidos,
+        "bloques_por_fecha": agrupar_partidos_por_fecha(partidos),
+        "apuesta": apuesta,
+        "pronosticos_dict": pronosticos_dict,
+        "estado_partidos": estado_partidos,
+    }
 
 
 def leer_entero(form_data, key):

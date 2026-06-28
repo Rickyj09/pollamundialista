@@ -14,6 +14,7 @@ from app.extensions import db
 from app.constants import VALOR_APUESTA_OFICIAL
 
 from app.utils.apuestas import (
+    apuesta_esta_pagada,
     construir_apuesta,
     guardar_pronosticos_desde_form,
     jornada_esta_abierta,
@@ -158,7 +159,7 @@ def registrar_apuesta_por_usuario():
             )
 
         pago_confirmado = usuario_tiene_pago_confirmado(usuario_seleccionado.id, jornada_seleccionada.id)
-        apuesta_pagada = apuesta_existente and (apuesta_existente.estado_pago or "").strip().lower() in {"pagado", "confirmado"}
+        apuesta_pagada = apuesta_existente and apuesta_esta_pagada(apuesta_existente.estado_pago)
         if not pago_confirmado and not apuesta_pagada:
             flash(
                 "El participante necesita un pago confirmado para esta jornada antes de registrar la apuesta.",
@@ -410,6 +411,18 @@ def confirmar_pago(pago_id):
     pago.estado = "confirmado"
     pago.fecha_confirmacion = now_ecuador_naive()
     pago.confirmado_por_id = current_user.id
+
+    apuesta = Apuesta.query.filter_by(
+        usuario_id=pago.usuario_id,
+        jornada_grupo_id=pago.jornada_grupo_id,
+    ).first()
+    if apuesta:
+        apuesta.estado_pago = "pagado"
+        apuesta.fecha_pago = pago.fecha_confirmacion
+        if not apuesta.metodo_pago:
+            apuesta.metodo_pago = pago.metodo_pago
+        if not apuesta.referencia_pago:
+            apuesta.referencia_pago = pago.referencia
 
     db.session.flush()
 
