@@ -14,6 +14,9 @@
 <p><strong>Validacion total:</strong> ${{ "%.2f"|format((jornada.valor_premio_jornada + jornada.valor_acumulado + jornada.valor_utilidad)|float) }}</p>
 <p><strong>Cierre Ecuador:</strong> {{ jornada.fecha_cierre.strftime("%Y-%m-%d %H:%M") if jornada.fecha_cierre else "" }}</p>
 <p><strong>Estado:</strong> {{ jornada.estado }}</p>
+{% if usa_resultado_final_eliminatoria %}
+<p><strong>Regla especial:</strong> El resultado oficial de esta fase debe registrarse con el marcador final, incluyendo alargue y penales si aplica.</p>
+{% endif %}
 
 <h2>Partidos</h2>
 

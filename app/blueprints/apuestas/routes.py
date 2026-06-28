@@ -8,6 +8,7 @@ from app.utils.apuestas import (
     construir_apuesta,
     guardar_pronosticos_desde_form,
     jornada_esta_abierta,
+    jornada_es_16avos,
     obtener_estado_partidos,
     obtener_partidos_ordenados,
     usuario_tiene_pago_confirmado,
@@ -49,6 +50,7 @@ def nueva_apuesta(jornada_id):
         jornada=jornada,
         partidos=partidos,
         estado_partidos=obtener_estado_partidos(partidos),
+        usa_resultado_final_eliminatoria=jornada_es_16avos(jornada),
     )
 
 
@@ -141,6 +143,7 @@ def editar_apuesta(apuesta_id):
         partidos=partidos,
         pronosticos_dict=pronosticos_dict,
         estado_partidos=obtener_estado_partidos(partidos),
+        usa_resultado_final_eliminatoria=jornada_es_16avos(jornada),
     )
 
 

@@ -5,6 +5,11 @@
 {% block content %}
 <h2 class="page-title">{{ jornada.nombre }}</h2>
 <p class="muted section-note">Revisa los partidos de la jornada. Cada pronostico se bloquea cuando inicia su partido en hora Ecuador y, cuando la jornada ya no admite apuestas, puedes consultar los marcadores registrados por participante.</p>
+{% if usa_resultado_final_eliminatoria %}
+<div class="empty-state" style="margin-bottom: 16px;">
+    En esta fase eliminatoria, el marcador oficial para la polla es el resultado final del partido, incluyendo alargue y penales si aplica.
+</div>
+{% endif %}
 
 <div class="match-summary">
     <div class="summary-item">

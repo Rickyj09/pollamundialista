@@ -12,6 +12,12 @@
     {{ partido.fecha_partido.strftime("%Y-%m-%d") if partido.fecha_partido else "" }}
 </p>
 
+{% if usa_resultado_final_eliminatoria %}
+<div class="empty-state" style="margin-bottom: 16px;">
+    Para 16avos de final registra el marcador final oficial, incluyendo alargue y penales si aplica.
+</div>
+{% endif %}
+
 <form method="POST">
     <div class="grid-2">
         <div class="form-group">

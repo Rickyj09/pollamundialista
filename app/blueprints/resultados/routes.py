@@ -2,13 +2,17 @@ from flask import render_template, request
 from sqlalchemy.orm import selectinload, joinedload
 from app.blueprints.resultados import resultados_bp
 from app.models import JornadaGrupo, PozoAcumulado, Partido
-from app.constants import JORNADA_2_JORNADA_GRUPO_IDS, JORNADA_3_JORNADA_GRUPO_IDS
+from app.constants import (
+    JORNADA_2_JORNADA_GRUPO_IDS,
+    JORNADA_3_JORNADA_GRUPO_IDS,
+    JORNADA_16AVOS_NOMBRE,
+)
 from app.utils.ranking import (
     obtener_apuestas_ordenadas_jornada,
     obtener_ranking_general,
     obtener_ranking_por_jornadas,
 )
-from app.utils.apuestas import filtrar_partidos_sudamericanos
+from app.utils.apuestas import jornada_tiene_partidos_visibles
 
 
 @resultados_bp.route("/")
@@ -27,7 +31,7 @@ def tabla():
     )
     jornadas = [
         jornada for jornada in jornadas_cargadas
-        if filtrar_partidos_sudamericanos(jornada.partidos)
+        if jornada_tiene_partidos_visibles(jornada)
     ]
 
     apuestas = []
@@ -89,4 +93,21 @@ def ranking_jornada_3():
         ranking_description="Ranking independiente de Jornada 3. Solo suma apuestas de los jornada_grupo_id 3, 6, 9, 12, 15 y 18.",
         ranking_scope_label="Jornada 3",
         ranking_scope_ids=JORNADA_3_JORNADA_GRUPO_IDS,
+    )
+
+
+@resultados_bp.route("/16avos-de-final")
+def ranking_16avos():
+    jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_16AVOS_NOMBRE).first()
+    jornada_ids = (jornada.id,) if jornada else ()
+    ranking = obtener_ranking_por_jornadas(jornada_ids)
+
+    return render_template(
+        "resultados/general_v2.html",
+        ranking=ranking,
+        pozo_final=None,
+        ranking_title="Ranking 16avos de final",
+        ranking_description="Ranking independiente de 16avos de final. Solo suma la apuesta unica de esta fase.",
+        ranking_scope_label="16avos de final",
+        ranking_scope_ids=jornada_ids,
     )

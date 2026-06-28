@@ -1,7 +1,13 @@
 from app.extensions import db
 from app.models import Apuesta, PagoJornada, Pronostico
-from app.constants import EQUIPOS_SUDAMERICANOS_NORMALIZADOS
+from app.constants import EQUIPOS_SUDAMERICANOS_NORMALIZADOS, JORNADA_16AVOS_NOMBRE
 from app.utils.timezone import now_ecuador_naive
+
+
+def jornada_es_16avos(jornada):
+    if not jornada:
+        return False
+    return ((jornada.nombre or "").strip().lower() == JORNADA_16AVOS_NOMBRE.lower())
 
 
 def partido_incluye_equipo_sudamericano(partido):
@@ -19,6 +25,17 @@ def filtrar_partidos_sudamericanos(partidos):
     return [partido for partido in partidos if partido_incluye_equipo_sudamericano(partido)]
 
 
+def obtener_partidos_visibles(jornada):
+    partidos = list(jornada.partidos or [])
+    if jornada_es_16avos(jornada):
+        return partidos
+    return filtrar_partidos_sudamericanos(partidos)
+
+
+def jornada_tiene_partidos_visibles(jornada):
+    return bool(obtener_partidos_visibles(jornada))
+
+
 def jornada_esta_abierta(jornada, ahora=None):
     return jornada.esta_abierta_para_apuestas(ahora=ahora or now_ecuador_naive())
 
@@ -33,7 +50,7 @@ def usuario_tiene_pago_confirmado(usuario_id, jornada_id):
 
 
 def obtener_partidos_ordenados(jornada):
-    partidos_visibles = filtrar_partidos_sudamericanos(jornada.partidos)
+    partidos_visibles = obtener_partidos_visibles(jornada)
     return sorted(
         partidos_visibles,
         key=lambda partido: (partido.fecha_partido, partido.numero_calendario or 0, partido.id),
@@ -110,6 +127,8 @@ def guardar_pronosticos_desde_form(apuesta, partidos, form_data, permitir_partid
             raise ValueError(
                 "Debes ingresar ambos marcadores o dejar ambos campos vacios en cada partido habilitado."
             )
+        if goles_local < 0 or goles_visitante < 0:
+            raise ValueError("No se permiten marcadores negativos.")
 
         pronostico = pronosticos_dict.get(partido.id)
         if pronostico:

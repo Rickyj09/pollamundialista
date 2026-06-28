@@ -17,6 +17,7 @@ from app.utils.apuestas import (
     construir_apuesta,
     guardar_pronosticos_desde_form,
     jornada_esta_abierta,
+    jornada_es_16avos,
     obtener_estado_partidos,
     obtener_partidos_ordenados,
     usuario_tiene_pago_confirmado,
@@ -348,7 +349,8 @@ def detalle_jornada(jornada_id):
     return render_template(
         "admin/jornada_detalle.html",
         jornada=jornada,
-        partidos=partidos
+        partidos=partidos,
+        usa_resultado_final_eliminatoria=jornada_es_16avos(jornada),
     )
 
 @admin_bp.route("/pagos")
@@ -443,6 +445,9 @@ def ingresar_resultado(partido_id):
         if goles_local is None or goles_visitante is None:
             flash("Debes ingresar ambos marcadores.", "danger")
             return redirect(url_for("admin.ingresar_resultado", partido_id=partido.id))
+        if goles_local < 0 or goles_visitante < 0:
+            flash("No se permiten marcadores negativos.", "danger")
+            return redirect(url_for("admin.ingresar_resultado", partido_id=partido.id))
 
         partido.goles_local = goles_local
         partido.goles_visitante = goles_visitante
@@ -465,4 +470,8 @@ def ingresar_resultado(partido_id):
         flash("Resultado guardado, puntos recalculados y jornada actualizada.", "success")
         return redirect(url_for("admin.listar_partidos"))
 
-    return render_template("admin/partido_resultado.html", partido=partido)
+    return render_template(
+        "admin/partido_resultado.html",
+        partido=partido,
+        usa_resultado_final_eliminatoria=jornada_es_16avos(partido.jornada_grupo),
+    )

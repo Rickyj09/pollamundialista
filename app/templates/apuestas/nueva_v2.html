@@ -4,6 +4,11 @@
 
 {% block content %}
 <h2 class="page-title">Nueva apuesta</h2>
+{% if usa_resultado_final_eliminatoria %}
+<div class="empty-state" style="margin-bottom: 16px;">
+    En 16avos de final se califica con el marcador final oficial del partido, incluyendo alargue y penales si aplica.
+</div>
+{% endif %}
 
 <div class="match-summary">
     <div class="summary-item">

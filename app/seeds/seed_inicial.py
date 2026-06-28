@@ -2,6 +2,9 @@ from datetime import datetime, date
 from app.extensions import db
 from app.models import Grupo, Equipo, JornadaGrupo, Partido
 from app.constants import (
+    GRUPO_16AVOS_NOMBRE,
+    JORNADA_16AVOS_NOMBRE,
+    JORNADA_16AVOS_NUMERO,
     VALOR_ACUMULADO_OFICIAL,
     VALOR_APUESTA_OFICIAL,
     VALOR_PREMIO_JORNADA_OFICIAL,
@@ -37,8 +40,8 @@ def upsert_equipo(nombre, grupo, es_sudamericano=False):
     return equipo
 
 
-def upsert_jornada(grupo, numero_jornada, fecha_cierre):
-    nombre = f"Grupo {grupo.nombre} - Jornada {numero_jornada}"
+def upsert_jornada(grupo, numero_jornada, fecha_cierre, nombre=None):
+    nombre = nombre or f"Grupo {grupo.nombre} - Jornada {numero_jornada}"
     jornada = JornadaGrupo.query.filter_by(
         grupo_id=grupo.id,
         numero_jornada=numero_jornada
@@ -112,6 +115,7 @@ def seed_inicial():
     grupo_h = upsert_grupo("H", "Grupo de Uruguay")
     grupo_j = upsert_grupo("J", "Grupo de Argentina")
     grupo_k = upsert_grupo("K", "Grupo de Colombia")
+    grupo_16f = upsert_grupo(GRUPO_16AVOS_NOMBRE, "Fase eliminatoria - 16avos de final")
 
     # -------------------------
     # 2. EQUIPOS
@@ -152,6 +156,24 @@ def seed_inicial():
     rd_congo = upsert_equipo("República Democrática del Congo", grupo_k, False)
     portugal = upsert_equipo("Portugal", grupo_k, False)
 
+    # Fase 16avos
+    sudafrica = upsert_equipo("Sudafrica", grupo_16f, False)
+    canada = upsert_equipo("Canada", grupo_16f, False)
+    japon = upsert_equipo("Japon", grupo_16f, False)
+    paises_bajos = upsert_equipo("Paises Bajos", grupo_16f, False)
+    noruega = upsert_equipo("Noruega", grupo_16f, False)
+    francia = upsert_equipo("Francia", grupo_16f, False)
+    suecia = upsert_equipo("Suecia", grupo_16f, False)
+    mexico = upsert_equipo("Mexico", grupo_16f, False)
+    inglaterra = upsert_equipo("Inglaterra", grupo_16f, False)
+    belgica = upsert_equipo("Belgica", grupo_16f, False)
+    senegal = upsert_equipo("Senegal", grupo_16f, False)
+    bosnia = upsert_equipo("Bosnia y Herzegovina", grupo_16f, False)
+    suiza = upsert_equipo("Suiza", grupo_16f, False)
+    croacia = upsert_equipo("Croacia", grupo_16f, False)
+    egipto = upsert_equipo("Egipto", grupo_16f, False)
+    ghana = upsert_equipo("Ghana", grupo_16f, False)
+
     # -------------------------
     # 3. JORNADAS
     # fecha_cierre: sugerencia inicial
@@ -180,6 +202,12 @@ def seed_inicial():
     jk1 = upsert_jornada(grupo_k, 1, datetime(2026, 6, 17, 12, 59, 0))
     jk2 = upsert_jornada(grupo_k, 2, datetime(2026, 6, 23, 12, 59, 0))
     jk3 = upsert_jornada(grupo_k, 3, datetime(2026, 6, 27, 19, 29, 0))
+    j16 = upsert_jornada(
+        grupo_16f,
+        JORNADA_16AVOS_NUMERO,
+        datetime(2026, 7, 3, 20, 29, 0),
+        nombre=JORNADA_16AVOS_NOMBRE,
+    )
 
     # -------------------------
     # 4. PARTIDOS
@@ -279,6 +307,40 @@ def seed_inicial():
                    colombia, portugal, "Estadio Hard Rock", "Miami")
     upsert_partido(jk3, grupo_k, 72, to_date("2026-06-27"), "19:30", "19:30",
                    rd_congo, uzbekistan, "Estadio Mercedes-Benz", "Atlanta")
+
+    # 16avos de final
+    upsert_partido(j16, grupo_16f, 101, to_date("2026-06-28"), "14:00", "14:00",
+                   sudafrica, canada, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 102, to_date("2026-06-29"), "12:00", "12:00",
+                   brasil, japon, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 103, to_date("2026-06-29"), "15:30", "15:30",
+                   alemania, paraguay, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 104, to_date("2026-06-29"), "20:00", "20:00",
+                   paises_bajos, marruecos, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 105, to_date("2026-06-30"), "12:00", "12:00",
+                   costa_marfil, noruega, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 106, to_date("2026-06-30"), "16:00", "16:00",
+                   francia, suecia, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 107, to_date("2026-06-30"), "20:00", "20:00",
+                   mexico, ecuador, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 108, to_date("2026-07-01"), "11:00", "11:00",
+                   inglaterra, rd_congo, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 109, to_date("2026-07-01"), "15:00", "15:00",
+                   belgica, senegal, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 110, to_date("2026-07-01"), "19:00", "19:00",
+                   estados_unidos, bosnia, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 111, to_date("2026-07-02"), "14:00", "14:00",
+                   espana, austria, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 112, to_date("2026-07-02"), "18:00", "18:00",
+                   portugal, croacia, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 113, to_date("2026-07-02"), "22:00", "22:00",
+                   suiza, argelia, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 114, to_date("2026-07-03"), "13:00", "13:00",
+                   australia, egipto, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 115, to_date("2026-07-03"), "17:00", "17:00",
+                   argentina, cabo_verde, "Pendiente", "Pendiente")
+    upsert_partido(j16, grupo_16f, 116, to_date("2026-07-03"), "20:30", "20:30",
+                   colombia, ghana, "Pendiente", "Pendiente")
 
     db.session.commit()
     print("✅ Seed inicial cargado correctamente.")
