@@ -38,17 +38,17 @@
 
 <div class="inline-actions">
     {% if jornada.esta_abierta_para_apuestas() %}
-        {% if jornada.nombre == "16avos de final" %}
+        {% if jornada.nombre == "16avos de final" or jornada.grupo.nombre == "16F" %}
             <a class="btn btn-primary" href="{{ url_for('apuestas.listar_16avos') }}">Registrar pronosticos</a>
-        {% elif jornada.nombre == "8vos de final" %}
+        {% elif jornada.nombre == "8vos de final" or jornada.grupo.nombre == "8F" %}
             <a class="btn btn-primary" href="{{ url_for('apuestas.listar_8vos') }}">Registrar pronosticos</a>
         {% else %}
             <a class="btn btn-primary" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">Registrar apuesta</a>
         {% endif %}
     {% else %}
-        {% if jornada.nombre == "16avos de final" %}
+        {% if jornada.nombre == "16avos de final" or jornada.grupo.nombre == "16F" %}
             <a class="btn btn-outline-primary" href="{{ url_for('apuestas.listar_16avos') }}">Ver pronosticos</a>
-        {% elif jornada.nombre == "8vos de final" %}
+        {% elif jornada.nombre == "8vos de final" or jornada.grupo.nombre == "8F" %}
             <a class="btn btn-outline-primary" href="{{ url_for('apuestas.listar_8vos') }}">Ver pronosticos</a>
         {% else %}
             <span class="badge badge-closed">Pronosticos disponibles</span>

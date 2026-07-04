@@ -1,8 +1,11 @@
 from flask import render_template, request
+from sqlalchemy import func, or_
 from sqlalchemy.orm import selectinload, joinedload
 from app.blueprints.resultados import resultados_bp
-from app.models import JornadaGrupo, PozoAcumulado, Partido
+from app.models import JornadaGrupo, PozoAcumulado, Partido, Grupo
 from app.constants import (
+    GRUPO_8VOS_NOMBRE,
+    GRUPO_16AVOS_NOMBRE,
     JORNADA_2_JORNADA_GRUPO_IDS,
     JORNADA_3_JORNADA_GRUPO_IDS,
     JORNADA_16AVOS_NOMBRE,
@@ -15,6 +18,20 @@ from app.utils.ranking import (
     obtener_ranking_por_jornadas,
 )
 from app.utils.apuestas import jornada_tiene_partidos_visibles
+
+
+def _buscar_jornada_por_fase(nombre_jornada, nombre_grupo):
+    return (
+        JornadaGrupo.query
+        .join(Grupo, Grupo.id == JornadaGrupo.grupo_id)
+        .filter(
+            or_(
+                func.lower(JornadaGrupo.nombre) == nombre_jornada.lower(),
+                func.lower(Grupo.nombre) == nombre_grupo.lower(),
+            )
+        )
+        .first()
+    )
 
 
 @resultados_bp.route("/")
@@ -100,7 +117,7 @@ def ranking_jornada_3():
 
 @resultados_bp.route("/16avos-de-final")
 def ranking_16avos():
-    jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_16AVOS_NOMBRE).first()
+    jornada = _buscar_jornada_por_fase(JORNADA_16AVOS_NOMBRE, GRUPO_16AVOS_NOMBRE)
     jornada_ids = (jornada.id,) if jornada else ()
     ranking = obtener_ranking_por_jornadas(jornada_ids)
     estados_pago_por_usuario = {}
@@ -127,7 +144,7 @@ def ranking_16avos():
 
 @resultados_bp.route("/8vos-de-final")
 def ranking_8vos():
-    jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_8VOS_NOMBRE).first()
+    jornada = _buscar_jornada_por_fase(JORNADA_8VOS_NOMBRE, GRUPO_8VOS_NOMBRE)
     jornada_ids = (jornada.id,) if jornada else ()
     ranking = obtener_ranking_por_jornadas(jornada_ids)
     estados_pago_por_usuario = {}

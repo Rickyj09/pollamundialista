@@ -1,10 +1,16 @@
 from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
+from sqlalchemy import func, or_
 
 from app.blueprints.apuestas import apuestas_bp
-from app.constants import JORNADA_16AVOS_NOMBRE, JORNADA_8VOS_NOMBRE
+from app.constants import (
+    GRUPO_16AVOS_NOMBRE,
+    GRUPO_8VOS_NOMBRE,
+    JORNADA_16AVOS_NOMBRE,
+    JORNADA_8VOS_NOMBRE,
+)
 from app.extensions import db
-from app.models import JornadaGrupo, Apuesta, Usuario
+from app.models import JornadaGrupo, Apuesta, Usuario, Grupo
 from app.utils.timezone import now_ecuador_naive
 from app.utils.apuestas import (
     apuesta_esta_pagada,
@@ -213,14 +219,38 @@ def actualizar_apuesta(apuesta_id):
 
 
 def _obtener_jornada_16avos():
-    jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_16AVOS_NOMBRE).first_or_404()
+    jornada = (
+        JornadaGrupo.query
+        .join(Grupo, Grupo.id == JornadaGrupo.grupo_id)
+        .filter(
+            or_(
+                func.lower(JornadaGrupo.nombre) == JORNADA_16AVOS_NOMBRE.lower(),
+                func.lower(Grupo.nombre) == GRUPO_16AVOS_NOMBRE.lower(),
+            )
+        )
+        .first()
+    )
+    if not jornada:
+        jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_16AVOS_NOMBRE).first_or_404()
     if not jornada_es_16avos(jornada):
         raise AssertionError("La jornada encontrada no corresponde a 16avos de final.")
     return jornada
 
 
 def _obtener_jornada_8vos():
-    jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_8VOS_NOMBRE).first_or_404()
+    jornada = (
+        JornadaGrupo.query
+        .join(Grupo, Grupo.id == JornadaGrupo.grupo_id)
+        .filter(
+            or_(
+                func.lower(JornadaGrupo.nombre) == JORNADA_8VOS_NOMBRE.lower(),
+                func.lower(Grupo.nombre) == GRUPO_8VOS_NOMBRE.lower(),
+            )
+        )
+        .first()
+    )
+    if not jornada:
+        jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_8VOS_NOMBRE).first_or_404()
     if not jornada_es_8vos(jornada):
         raise AssertionError("La jornada encontrada no corresponde a 8vos de final.")
     return jornada

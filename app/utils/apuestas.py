@@ -4,6 +4,8 @@ from app.extensions import db
 from app.models import Apuesta, PagoJornada, Pronostico
 from app.constants import (
     EQUIPOS_SUDAMERICANOS_NORMALIZADOS,
+    GRUPO_16AVOS_NOMBRE,
+    GRUPO_8VOS_NOMBRE,
     JORNADA_16AVOS_NOMBRE,
     JORNADA_8VOS_NOMBRE,
 )
@@ -14,30 +16,58 @@ FASES_ELIMINATORIAS_NOMBRES = {
     JORNADA_16AVOS_NOMBRE.lower(): "16avos",
     JORNADA_8VOS_NOMBRE.lower(): "8vos",
 }
+FASES_ELIMINATORIAS_GRUPOS = {
+    GRUPO_16AVOS_NOMBRE.lower(): "16avos",
+    GRUPO_8VOS_NOMBRE.lower(): "8vos",
+}
+
+
+def nombre_jornada_normalizado(jornada):
+    if not jornada:
+        return ""
+    return ((jornada.nombre or "").strip().lower())
+
+
+def nombre_grupo_jornada_normalizado(jornada):
+    if not jornada or not getattr(jornada, "grupo", None):
+        return ""
+    return (((jornada.grupo.nombre if jornada.grupo else "") or "").strip().lower())
 
 
 def jornada_es_16avos(jornada):
     if not jornada:
         return False
-    return ((jornada.nombre or "").strip().lower() == JORNADA_16AVOS_NOMBRE.lower())
+    return (
+        nombre_jornada_normalizado(jornada) == JORNADA_16AVOS_NOMBRE.lower()
+        or nombre_grupo_jornada_normalizado(jornada) == GRUPO_16AVOS_NOMBRE.lower()
+    )
 
 
 def jornada_es_8vos(jornada):
     if not jornada:
         return False
-    return ((jornada.nombre or "").strip().lower() == JORNADA_8VOS_NOMBRE.lower())
+    return (
+        nombre_jornada_normalizado(jornada) == JORNADA_8VOS_NOMBRE.lower()
+        or nombre_grupo_jornada_normalizado(jornada) == GRUPO_8VOS_NOMBRE.lower()
+    )
 
 
 def jornada_es_fase_eliminatoria(jornada):
     if not jornada:
         return False
-    return ((jornada.nombre or "").strip().lower() in FASES_ELIMINATORIAS_NOMBRES)
+    return (
+        nombre_jornada_normalizado(jornada) in FASES_ELIMINATORIAS_NOMBRES
+        or nombre_grupo_jornada_normalizado(jornada) in FASES_ELIMINATORIAS_GRUPOS
+    )
 
 
 def slug_fase_eliminatoria(jornada):
     if not jornada:
         return None
-    return FASES_ELIMINATORIAS_NOMBRES.get(((jornada.nombre or "").strip().lower()))
+    return (
+        FASES_ELIMINATORIAS_NOMBRES.get(nombre_jornada_normalizado(jornada))
+        or FASES_ELIMINATORIAS_GRUPOS.get(nombre_grupo_jornada_normalizado(jornada))
+    )
 
 
 def partido_incluye_equipo_sudamericano(partido):
