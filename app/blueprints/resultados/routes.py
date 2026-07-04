@@ -6,6 +6,7 @@ from app.constants import (
     JORNADA_2_JORNADA_GRUPO_IDS,
     JORNADA_3_JORNADA_GRUPO_IDS,
     JORNADA_16AVOS_NOMBRE,
+    JORNADA_8VOS_NOMBRE,
 )
 from app.utils.apuestas import apuesta_esta_pagada
 from app.utils.ranking import (
@@ -118,6 +119,33 @@ def ranking_16avos():
         ranking_title="Ranking 16avos de final",
         ranking_description="Ranking independiente de 16avos de final. Solo suma la apuesta unica de esta fase.",
         ranking_scope_label="16avos de final",
+        ranking_scope_ids=jornada_ids,
+        mostrar_estado_pago=True,
+        estados_pago_por_usuario=estados_pago_por_usuario,
+    )
+
+
+@resultados_bp.route("/8vos-de-final")
+def ranking_8vos():
+    jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_8VOS_NOMBRE).first()
+    jornada_ids = (jornada.id,) if jornada else ()
+    ranking = obtener_ranking_por_jornadas(jornada_ids)
+    estados_pago_por_usuario = {}
+
+    if jornada:
+        for apuesta in obtener_apuestas_ordenadas_jornada(jornada.id):
+            estados_pago_por_usuario[apuesta.usuario_id] = {
+                "estado": (apuesta.estado_pago or "").strip().lower(),
+                "pagada": apuesta_esta_pagada(apuesta.estado_pago),
+            }
+
+    return render_template(
+        "resultados/general_v2.html",
+        ranking=ranking,
+        pozo_final=None,
+        ranking_title="Ranking 8vos de final",
+        ranking_description="Ranking independiente de 8vos de final. Solo suma la apuesta unica de esta fase.",
+        ranking_scope_label="8vos de final",
         ranking_scope_ids=jornada_ids,
         mostrar_estado_pago=True,
         estados_pago_por_usuario=estados_pago_por_usuario,

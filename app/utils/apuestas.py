@@ -2,14 +2,42 @@ from collections import OrderedDict
 
 from app.extensions import db
 from app.models import Apuesta, PagoJornada, Pronostico
-from app.constants import EQUIPOS_SUDAMERICANOS_NORMALIZADOS, JORNADA_16AVOS_NOMBRE
+from app.constants import (
+    EQUIPOS_SUDAMERICANOS_NORMALIZADOS,
+    JORNADA_16AVOS_NOMBRE,
+    JORNADA_8VOS_NOMBRE,
+)
 from app.utils.timezone import now_ecuador_naive
+
+
+FASES_ELIMINATORIAS_NOMBRES = {
+    JORNADA_16AVOS_NOMBRE.lower(): "16avos",
+    JORNADA_8VOS_NOMBRE.lower(): "8vos",
+}
 
 
 def jornada_es_16avos(jornada):
     if not jornada:
         return False
     return ((jornada.nombre or "").strip().lower() == JORNADA_16AVOS_NOMBRE.lower())
+
+
+def jornada_es_8vos(jornada):
+    if not jornada:
+        return False
+    return ((jornada.nombre or "").strip().lower() == JORNADA_8VOS_NOMBRE.lower())
+
+
+def jornada_es_fase_eliminatoria(jornada):
+    if not jornada:
+        return False
+    return ((jornada.nombre or "").strip().lower() in FASES_ELIMINATORIAS_NOMBRES)
+
+
+def slug_fase_eliminatoria(jornada):
+    if not jornada:
+        return None
+    return FASES_ELIMINATORIAS_NOMBRES.get(((jornada.nombre or "").strip().lower()))
 
 
 def partido_incluye_equipo_sudamericano(partido):
@@ -29,7 +57,7 @@ def filtrar_partidos_sudamericanos(partidos):
 
 def obtener_partidos_visibles(jornada):
     partidos = list(jornada.partidos or [])
-    if jornada_es_16avos(jornada):
+    if jornada_es_fase_eliminatoria(jornada):
         return partidos
     return filtrar_partidos_sudamericanos(partidos)
 
@@ -124,7 +152,7 @@ def construir_apuesta(
     )
 
 
-def construir_contexto_16avos(jornada, usuario_id, ahora=None):
+def construir_contexto_fase_eliminatoria(jornada, usuario_id, ahora=None):
     partidos = obtener_partidos_ordenados(jornada)
     apuesta = obtener_apuesta_usuario_jornada(usuario_id, jornada.id)
     pronosticos_dict = {
@@ -140,6 +168,10 @@ def construir_contexto_16avos(jornada, usuario_id, ahora=None):
         "pronosticos_dict": pronosticos_dict,
         "estado_partidos": estado_partidos,
     }
+
+
+def construir_contexto_16avos(jornada, usuario_id, ahora=None):
+    return construir_contexto_fase_eliminatoria(jornada, usuario_id, ahora=ahora)
 
 
 def leer_entero(form_data, key):

@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}16avos de final{% endblock %}
+{% block title %}{{ titulo_fase or jornada.nombre }}{% endblock %}
 
 {% block content %}
-<h2 class="page-title">16avos de final</h2>
+<h2 class="page-title">{{ titulo_fase or jornada.nombre }}</h2>
 <p class="muted">La apuesta sigue siendo unica para toda la fase por USD 5.00, pero ahora puedes registrar tus pronosticos partido por partido antes de que cada encuentro inicie en hora Ecuador.</p>
 
 <div class="empty-state" style="margin-bottom: 16px;">
@@ -92,14 +92,14 @@
                     <td>
                         {% if estado.ya_inicio %}
                             {% if pronostico %}
-                                <a class="btn btn-outline-primary" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Ver pronostico</a>
+                                <a class="btn btn-outline-primary" href="{{ url_for(endpoint_partido_fase, partido_id=partido.id) }}">Ver pronostico</a>
                             {% else %}
                                 <span class="badge badge-closed">Cerrado</span>
                             {% endif %}
                         {% elif pronostico %}
-                            <a class="btn btn-warning" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Editar pronostico</a>
+                            <a class="btn btn-warning" href="{{ url_for(endpoint_partido_fase, partido_id=partido.id) }}">Editar pronostico</a>
                         {% else %}
-                            <a class="btn btn-primary" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Pronosticar</a>
+                            <a class="btn btn-primary" href="{{ url_for(endpoint_partido_fase, partido_id=partido.id) }}">Pronosticar</a>
                         {% endif %}
                     </td>
                 </tr>
@@ -156,14 +156,14 @@
 
             {% if estado.ya_inicio %}
                 {% if pronostico %}
-                    <a class="btn btn-outline-primary btn-block" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Ver pronostico</a>
+                    <a class="btn btn-outline-primary btn-block" href="{{ url_for(endpoint_partido_fase, partido_id=partido.id) }}">Ver pronostico</a>
                 {% else %}
                     <div class="muted" style="font-weight: 700;">Cerrado sin pronostico</div>
                 {% endif %}
             {% elif pronostico %}
-                <a class="btn btn-warning btn-block" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Editar pronostico</a>
+                <a class="btn btn-warning btn-block" href="{{ url_for(endpoint_partido_fase, partido_id=partido.id) }}">Editar pronostico</a>
             {% else %}
-                <a class="btn btn-primary btn-block" href="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">Pronosticar</a>
+                <a class="btn btn-primary btn-block" href="{{ url_for(endpoint_partido_fase, partido_id=partido.id) }}">Pronosticar</a>
             {% endif %}
         </div>
         {% endfor %}

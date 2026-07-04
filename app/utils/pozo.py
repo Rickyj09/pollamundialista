@@ -1,6 +1,7 @@
 from decimal import Decimal
 from app.models import PagoJornada, JornadaGrupo, PozoAcumulado, MovimientoAcumulado
 from app.extensions import db
+from app.constants import JORNADA_8VOS_NOMBRE
 from app.utils.ranking import obtener_apuestas_ordenadas_jornada
 from app.utils.apuestas import apuesta_esta_pagada
 
@@ -139,3 +140,16 @@ def mover_acumulado_jornada(jornada_id):
     )
     db.session.add(movimiento)
     db.session.flush()
+
+
+def participante_habilitado_acumulado_final(usuario_id):
+    jornada_8vos = JornadaGrupo.query.filter_by(nombre=JORNADA_8VOS_NOMBRE).first()
+    if not jornada_8vos:
+        return False
+
+    pago_confirmado = PagoJornada.query.filter_by(
+        usuario_id=usuario_id,
+        jornada_grupo_id=jornada_8vos.id,
+        estado="confirmado",
+    ).first()
+    return pago_confirmado is not None

@@ -49,12 +49,16 @@
                             {% if jornada.esta_abierta_para_apuestas() %}
                                 {% if jornada.nombre == "16avos de final" %}
                                     <a class="btn btn-primary" href="{{ url_for('apuestas.listar_16avos') }}">Apostar</a>
+                                {% elif jornada.nombre == "8vos de final" %}
+                                    <a class="btn btn-primary" href="{{ url_for('apuestas.listar_8vos') }}">Apostar</a>
                                 {% else %}
                                     <a class="btn btn-primary" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">Apostar</a>
                                 {% endif %}
                             {% else %}
                                 {% if jornada.nombre == "16avos de final" %}
                                     <a class="btn btn-outline-primary" href="{{ url_for('apuestas.listar_16avos') }}">Ver pronosticos</a>
+                                {% elif jornada.nombre == "8vos de final" %}
+                                    <a class="btn btn-outline-primary" href="{{ url_for('apuestas.listar_8vos') }}">Ver pronosticos</a>
                                 {% else %}
                                     <a class="btn btn-outline-primary" href="{{ url_for('jornadas.detalle', jornada_id=jornada.id) }}">Ver pronosticos</a>
                                 {% endif %}
@@ -116,12 +120,16 @@
                 {% if jornada.esta_abierta_para_apuestas() %}
                     {% if jornada.nombre == "16avos de final" %}
                         <a class="btn btn-primary btn-block" href="{{ url_for('apuestas.listar_16avos') }}">Apostar</a>
+                    {% elif jornada.nombre == "8vos de final" %}
+                        <a class="btn btn-primary btn-block" href="{{ url_for('apuestas.listar_8vos') }}">Apostar</a>
                     {% else %}
                         <a class="btn btn-primary btn-block" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">Apostar</a>
                     {% endif %}
                 {% else %}
                     {% if jornada.nombre == "16avos de final" %}
                         <a class="btn btn-outline-primary btn-block" href="{{ url_for('apuestas.listar_16avos') }}">Ver pronosticos</a>
+                    {% elif jornada.nombre == "8vos de final" %}
+                        <a class="btn btn-outline-primary btn-block" href="{{ url_for('apuestas.listar_8vos') }}">Ver pronosticos</a>
                     {% else %}
                         <a class="btn btn-outline-primary btn-block" href="{{ url_for('jornadas.detalle', jornada_id=jornada.id) }}">Ver pronosticos</a>
                     {% endif %}

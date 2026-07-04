@@ -18,7 +18,7 @@ from app.utils.apuestas import (
     construir_apuesta,
     guardar_pronosticos_desde_form,
     jornada_esta_abierta,
-    jornada_es_16avos,
+    jornada_es_fase_eliminatoria,
     obtener_estado_partidos,
     obtener_partidos_ordenados,
     usuario_tiene_pago_confirmado,
@@ -351,7 +351,7 @@ def detalle_jornada(jornada_id):
         "admin/jornada_detalle.html",
         jornada=jornada,
         partidos=partidos,
-        usa_resultado_final_eliminatoria=jornada_es_16avos(jornada),
+        usa_resultado_final_eliminatoria=jornada_es_fase_eliminatoria(jornada),
     )
 
 @admin_bp.route("/pagos")
@@ -486,5 +486,5 @@ def ingresar_resultado(partido_id):
     return render_template(
         "admin/partido_resultado.html",
         partido=partido,
-        usa_resultado_final_eliminatoria=jornada_es_16avos(partido.jornada_grupo),
+        usa_resultado_final_eliminatoria=jornada_es_fase_eliminatoria(partido.jornada_grupo),
     )

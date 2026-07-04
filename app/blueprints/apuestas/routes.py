@@ -2,21 +2,24 @@ from flask import render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
 
 from app.blueprints.apuestas import apuestas_bp
-from app.constants import JORNADA_16AVOS_NOMBRE
+from app.constants import JORNADA_16AVOS_NOMBRE, JORNADA_8VOS_NOMBRE
 from app.extensions import db
 from app.models import JornadaGrupo, Apuesta, Usuario
 from app.utils.timezone import now_ecuador_naive
 from app.utils.apuestas import (
     apuesta_esta_pagada,
-    construir_contexto_16avos,
+    construir_contexto_fase_eliminatoria,
     construir_apuesta,
     estado_apuesta_normalizado,
     guardar_pronosticos_desde_form,
     obtener_apuesta_usuario_jornada,
     jornada_esta_abierta,
     jornada_es_16avos,
+    jornada_es_8vos,
+    jornada_es_fase_eliminatoria,
     obtener_estado_partidos,
     obtener_partidos_ordenados,
+    slug_fase_eliminatoria,
     usuario_tiene_pago_confirmado,
 )
 
@@ -37,8 +40,8 @@ def mis_apuestas():
 @login_required
 def nueva_apuesta(jornada_id):
     jornada = JornadaGrupo.query.get_or_404(jornada_id)
-    if jornada_es_16avos(jornada):
-        return redirect(url_for("apuestas.listar_16avos"))
+    if jornada_es_fase_eliminatoria(jornada):
+        return redirect(url_for(_endpoint_lista_fase_eliminatoria(jornada)))
 
     partidos = obtener_partidos_ordenados(jornada)
 
@@ -59,7 +62,7 @@ def nueva_apuesta(jornada_id):
         jornada=jornada,
         partidos=partidos,
         estado_partidos=obtener_estado_partidos(partidos),
-        usa_resultado_final_eliminatoria=jornada_es_16avos(jornada),
+        usa_resultado_final_eliminatoria=jornada_es_fase_eliminatoria(jornada),
     )
 
 
@@ -67,9 +70,9 @@ def nueva_apuesta(jornada_id):
 @login_required
 def guardar_apuesta(jornada_id):
     jornada = JornadaGrupo.query.get_or_404(jornada_id)
-    if jornada_es_16avos(jornada):
-        flash("En 16avos de final debes registrar cada pronostico partido por partido.", "warning")
-        return redirect(url_for("apuestas.listar_16avos"))
+    if jornada_es_fase_eliminatoria(jornada):
+        flash("En esta fase eliminatoria debes registrar cada pronostico partido por partido.", "warning")
+        return redirect(url_for(_endpoint_lista_fase_eliminatoria(jornada)))
 
     partidos = obtener_partidos_ordenados(jornada)
 
@@ -137,8 +140,8 @@ def editar_apuesta(apuesta_id):
         return redirect(url_for("apuestas.mis_apuestas"))
 
     jornada = apuesta.jornada_grupo
-    if jornada_es_16avos(jornada):
-        return redirect(url_for("apuestas.listar_16avos"))
+    if jornada_es_fase_eliminatoria(jornada):
+        return redirect(url_for(_endpoint_lista_fase_eliminatoria(jornada)))
 
     partidos = obtener_partidos_ordenados(jornada)
 
@@ -159,7 +162,7 @@ def editar_apuesta(apuesta_id):
         partidos=partidos,
         pronosticos_dict=pronosticos_dict,
         estado_partidos=obtener_estado_partidos(partidos),
-        usa_resultado_final_eliminatoria=jornada_es_16avos(jornada),
+        usa_resultado_final_eliminatoria=jornada_es_fase_eliminatoria(jornada),
     )
 
 
@@ -173,9 +176,9 @@ def actualizar_apuesta(apuesta_id):
         return redirect(url_for("apuestas.mis_apuestas"))
 
     jornada = apuesta.jornada_grupo
-    if jornada_es_16avos(jornada):
-        flash("En 16avos de final debes actualizar cada pronostico desde el partido correspondiente.", "warning")
-        return redirect(url_for("apuestas.listar_16avos"))
+    if jornada_es_fase_eliminatoria(jornada):
+        flash("En esta fase eliminatoria debes actualizar cada pronostico desde el partido correspondiente.", "warning")
+        return redirect(url_for(_endpoint_lista_fase_eliminatoria(jornada)))
 
     partidos = obtener_partidos_ordenados(jornada)
 
@@ -216,11 +219,31 @@ def _obtener_jornada_16avos():
     return jornada
 
 
-@apuestas_bp.route("/16avos", methods=["GET"])
-@login_required
-def listar_16avos():
-    jornada = _obtener_jornada_16avos()
-    contexto = construir_contexto_16avos(jornada, current_user.id)
+def _obtener_jornada_8vos():
+    jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_8VOS_NOMBRE).first_or_404()
+    if not jornada_es_8vos(jornada):
+        raise AssertionError("La jornada encontrada no corresponde a 8vos de final.")
+    return jornada
+
+
+def _endpoint_lista_fase_eliminatoria(jornada):
+    if jornada_es_16avos(jornada):
+        return "apuestas.listar_16avos"
+    if jornada_es_8vos(jornada):
+        return "apuestas.listar_8vos"
+    raise AssertionError("La jornada no corresponde a una fase eliminatoria soportada.")
+
+
+def _endpoint_partido_fase_eliminatoria(jornada):
+    if jornada_es_16avos(jornada):
+        return "apuestas.pronosticar_partido_16avos"
+    if jornada_es_8vos(jornada):
+        return "apuestas.pronosticar_partido_8vos"
+    raise AssertionError("La jornada no corresponde a una fase eliminatoria soportada.")
+
+
+def _render_listado_fase_eliminatoria(jornada):
+    contexto = construir_contexto_fase_eliminatoria(jornada, current_user.id)
     pago_confirmado = usuario_tiene_pago_confirmado(current_user.id, jornada.id)
     estado_pago_apuesta = estado_apuesta_normalizado(contexto["apuesta"].estado_pago if contexto["apuesta"] else None)
 
@@ -234,19 +257,19 @@ def listar_16avos():
         pago_confirmado=pago_confirmado,
         estado_pago_apuesta=estado_pago_apuesta,
         apuesta_pagada=apuesta_esta_pagada(estado_pago_apuesta),
+        titulo_fase=jornada.nombre,
+        endpoint_partido_fase=_endpoint_partido_fase_eliminatoria(jornada),
+        url_lista_fase=url_for(_endpoint_lista_fase_eliminatoria(jornada)),
     )
 
 
-@apuestas_bp.route("/16avos/partido/<int:partido_id>", methods=["GET", "POST"])
-@login_required
-def pronosticar_partido_16avos(partido_id):
-    jornada = _obtener_jornada_16avos()
-    contexto = construir_contexto_16avos(jornada, current_user.id)
+def _render_partido_fase_eliminatoria(jornada, partido_id):
+    contexto = construir_contexto_fase_eliminatoria(jornada, current_user.id)
     partido = next((item for item in contexto["partidos"] if item.id == partido_id), None)
 
     if not partido:
-        flash("El partido seleccionado no pertenece a 16avos de final.", "danger")
-        return redirect(url_for("apuestas.listar_16avos"))
+        flash("El partido seleccionado no pertenece a esta fase eliminatoria.", "danger")
+        return redirect(url_for(_endpoint_lista_fase_eliminatoria(jornada)))
 
     apuesta = contexto["apuesta"]
     pronostico = contexto["pronosticos_dict"].get(partido.id)
@@ -258,7 +281,7 @@ def pronosticar_partido_16avos(partido_id):
     if request.method == "POST":
         if partido_cerrado:
             flash("Este partido ya inicio y no admite nuevos cambios.", "warning")
-            return redirect(url_for("apuestas.pronosticar_partido_16avos", partido_id=partido.id))
+            return redirect(url_for(_endpoint_partido_fase_eliminatoria(jornada), partido_id=partido.id))
 
         if apuesta is None:
             apuesta = construir_apuesta(
@@ -283,8 +306,8 @@ def pronosticar_partido_16avos(partido_id):
                 raise ValueError("Debes ingresar ambos marcadores para guardar este pronostico.")
 
             db.session.commit()
-            flash("Pronostico guardado correctamente para 16avos de final.", "success")
-            return redirect(url_for("apuestas.listar_16avos"))
+            flash(f"Pronostico guardado correctamente para {jornada.nombre}.", "success")
+            return redirect(url_for(_endpoint_lista_fase_eliminatoria(jornada)))
 
         except ValueError as error:
             db.session.rollback()
@@ -294,7 +317,7 @@ def pronosticar_partido_16avos(partido_id):
             flash(f"Error al guardar el pronostico: {error}", "danger")
 
         apuesta = obtener_apuesta_usuario_jornada(current_user.id, jornada.id)
-        contexto = construir_contexto_16avos(jornada, current_user.id)
+        contexto = construir_contexto_fase_eliminatoria(jornada, current_user.id)
         pronostico = contexto["pronosticos_dict"].get(partido.id)
         estado_partido = contexto["estado_partidos"].get(partido.id, {})
         partido_cerrado = bool(estado_partido.get("ya_inicio"))
@@ -310,4 +333,36 @@ def pronosticar_partido_16avos(partido_id):
         pago_confirmado=pago_confirmado,
         estado_pago_apuesta=estado_pago_apuesta,
         apuesta_pagada=apuesta_esta_pagada(estado_pago_apuesta),
+        titulo_fase=jornada.nombre,
+        url_lista_fase=url_for(_endpoint_lista_fase_eliminatoria(jornada)),
+        endpoint_partido_fase=_endpoint_partido_fase_eliminatoria(jornada),
+        slug_fase=slug_fase_eliminatoria(jornada),
     )
+
+
+@apuestas_bp.route("/16avos", methods=["GET"])
+@login_required
+def listar_16avos():
+    jornada = _obtener_jornada_16avos()
+    return _render_listado_fase_eliminatoria(jornada)
+
+
+@apuestas_bp.route("/8vos", methods=["GET"])
+@login_required
+def listar_8vos():
+    jornada = _obtener_jornada_8vos()
+    return _render_listado_fase_eliminatoria(jornada)
+
+
+@apuestas_bp.route("/16avos/partido/<int:partido_id>", methods=["GET", "POST"])
+@login_required
+def pronosticar_partido_16avos(partido_id):
+    jornada = _obtener_jornada_16avos()
+    return _render_partido_fase_eliminatoria(jornada, partido_id)
+
+
+@apuestas_bp.route("/8vos/partido/<int:partido_id>", methods=["GET", "POST"])
+@login_required
+def pronosticar_partido_8vos(partido_id):
+    jornada = _obtener_jornada_8vos()
+    return _render_partido_fase_eliminatoria(jornada, partido_id)

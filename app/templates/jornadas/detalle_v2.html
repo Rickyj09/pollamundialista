@@ -40,12 +40,16 @@
     {% if jornada.esta_abierta_para_apuestas() %}
         {% if jornada.nombre == "16avos de final" %}
             <a class="btn btn-primary" href="{{ url_for('apuestas.listar_16avos') }}">Registrar pronosticos</a>
+        {% elif jornada.nombre == "8vos de final" %}
+            <a class="btn btn-primary" href="{{ url_for('apuestas.listar_8vos') }}">Registrar pronosticos</a>
         {% else %}
             <a class="btn btn-primary" href="{{ url_for('apuestas.nueva_apuesta', jornada_id=jornada.id) }}">Registrar apuesta</a>
         {% endif %}
     {% else %}
         {% if jornada.nombre == "16avos de final" %}
             <a class="btn btn-outline-primary" href="{{ url_for('apuestas.listar_16avos') }}">Ver pronosticos</a>
+        {% elif jornada.nombre == "8vos de final" %}
+            <a class="btn btn-outline-primary" href="{{ url_for('apuestas.listar_8vos') }}">Ver pronosticos</a>
         {% else %}
             <span class="badge badge-closed">Pronosticos disponibles</span>
         {% endif %}
@@ -131,13 +135,15 @@
 
 <h3 class="section-title">Pronosticos de participantes</h3>
 
-{% if pronosticos_visibles %}
+{% if pronosticos_visibles or pronosticos_parciales %}
     {% set totales = namespace(total_filas=0) %}
     {% for bloque in pronosticos_por_partido %}
-        {% set totales.total_filas = totales.total_filas + (bloque.filas|length) %}
+        {% if bloque.visible %}
+            {% set totales.total_filas = totales.total_filas + (bloque.filas|length) %}
+        {% endif %}
     {% endfor %}
 
-    {% if totales.total_filas > 0 %}
+    {% if totales.total_filas > 0 or pronosticos_parciales %}
         {% for bloque in pronosticos_por_partido %}
             <div class="section-block" style="margin-bottom: 24px;">
                 <div class="section-note" style="margin-bottom: 12px;">
@@ -148,7 +154,9 @@
                     </span>
                 </div>
 
-                {% if bloque.filas %}
+                {% if not bloque.visible %}
+                    <div class="empty-state">Los pronosticos de este partido se habilitan cuando el partido inicia o la jornada quede completamente cerrada.</div>
+                {% elif bloque.filas %}
                     <div class="table-wrap desktop-only">
                         <table>
                             <thead>

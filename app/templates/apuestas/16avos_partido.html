@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Pronostico de 16avos{% endblock %}
+{% block title %}Pronostico de {{ titulo_fase or jornada.nombre }}{% endblock %}
 
 {% block content %}
-<h2 class="page-title">16avos de final</h2>
+<h2 class="page-title">{{ titulo_fase or jornada.nombre }}</h2>
 <p class="muted">Ingresa o revisa el pronostico de este partido. El bloqueo usa la hora oficial de Ecuador.</p>
 
 <div class="match-summary">
@@ -26,7 +26,7 @@
 </div>
 
 <div class="empty-state" style="margin-bottom: 16px;">
-    Para 16avos se registra el marcador final oficial del partido, incluyendo alargue y penales si aplica.
+    En esta fase eliminatoria se registra el marcador final oficial del partido, incluyendo alargue y penales si aplica.
 </div>
 
 {% if apuesta_pagada %}
@@ -45,7 +45,7 @@
 </div>
 {% endif %}
 
-<form method="POST" action="{{ url_for('apuestas.pronosticar_partido_16avos', partido_id=partido.id) }}">
+<form method="POST" action="{{ url_for(endpoint_partido_fase, partido_id=partido.id) }}">
     <div class="score-row">
         <div class="match-score-field">
             <label for="goles_local_{{ partido.id }}">{{ partido.equipo_local.nombre }}</label>
@@ -79,7 +79,7 @@
                 {% if pronostico %}Actualizar pronostico{% else %}Guardar pronostico{% endif %}
             </button>
         {% endif %}
-        <a href="{{ url_for('apuestas.listar_16avos') }}" class="btn btn-secondary">Volver a 16avos</a>
+        <a href="{{ url_lista_fase }}" class="btn btn-secondary">Volver a {{ titulo_fase or jornada.nombre }}</a>
     </div>
 </form>
 {% endblock %}

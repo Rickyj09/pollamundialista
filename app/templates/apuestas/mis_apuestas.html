@@ -43,7 +43,7 @@
                     </td>
                     <td>{{ apuesta.puntos_total }}</td>
                     <td>
-                        {% if apuesta.jornada_grupo.nombre == "16avos de final" %}
+                        {% if apuesta.jornada_grupo.nombre in ["16avos de final", "8vos de final"] %}
                             <div style="margin-bottom: 8px;">
                                 {% if apuesta.estado_pago|lower in ["pagado", "confirmado"] %}
                                     <span class="badge badge-open">Pago confirmado: participas en el pozo de premio.</span>
@@ -63,6 +63,10 @@
                     <td>
                         {% if apuesta.jornada_grupo.nombre == "16avos de final" %}
                             <a class="btn btn-warning" href="{{ url_for('apuestas.listar_16avos') }}">
+                                Ver fase
+                            </a>
+                        {% elif apuesta.jornada_grupo.nombre == "8vos de final" %}
+                            <a class="btn btn-warning" href="{{ url_for('apuestas.listar_8vos') }}">
                                 Ver fase
                             </a>
                         {% elif apuesta.jornada_grupo.esta_abierta_para_apuestas() %}
@@ -123,7 +127,7 @@
             </div>
 
             <div style="margin-bottom: 14px;">
-                {% if apuesta.jornada_grupo.nombre == "16avos de final" %}
+                {% if apuesta.jornada_grupo.nombre in ["16avos de final", "8vos de final"] %}
                 <div class="mobile-data-box" style="margin-bottom: 10px;">
                     <div class="mobile-label">Estado para premio</div>
                     <div class="mobile-value">
@@ -150,6 +154,8 @@
 
             {% if apuesta.jornada_grupo.nombre == "16avos de final" %}
                 <a class="btn btn-warning" href="{{ url_for('apuestas.listar_16avos') }}">Ver fase</a>
+            {% elif apuesta.jornada_grupo.nombre == "8vos de final" %}
+                <a class="btn btn-warning" href="{{ url_for('apuestas.listar_8vos') }}">Ver fase</a>
             {% elif apuesta.jornada_grupo.esta_abierta_para_apuestas() %}
                 <a class="btn btn-warning" href="{{ url_for('apuestas.editar_apuesta', apuesta_id=apuesta.id) }}">Editar apuesta</a>
             {% else %}

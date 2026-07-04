@@ -2,7 +2,12 @@ from flask import render_template
 from sqlalchemy.orm import joinedload, selectinload
 from app.blueprints.jornadas import jornadas_bp
 from app.models import JornadaGrupo, Apuesta, Partido, Pronostico, Usuario
-from app.utils.apuestas import jornada_es_16avos, jornada_tiene_partidos_visibles, obtener_partidos_ordenados
+from app.utils.apuestas import (
+    jornada_es_fase_eliminatoria,
+    jornada_tiene_partidos_visibles,
+    obtener_estado_partidos,
+    obtener_partidos_ordenados,
+)
 
 
 @jornadas_bp.route("/")
@@ -39,10 +44,14 @@ def detalle(jornada_id):
 
     partidos = obtener_partidos_ordenados(jornada)
 
+    estado_partidos = obtener_estado_partidos(partidos)
     pronosticos_visibles = jornada.pronosticos_son_visibles()
+    pronosticos_parciales = jornada_es_fase_eliminatoria(jornada) and any(
+        estado.get("ya_inicio") for estado in estado_partidos.values()
+    )
     pronosticos_por_partido = []
 
-    if pronosticos_visibles:
+    if pronosticos_visibles or pronosticos_parciales:
         apuestas = (
             Apuesta.query
             .join(Usuario, Usuario.id == Apuesta.usuario_id)
@@ -70,9 +79,10 @@ def detalle(jornada_id):
                         "estado_pago": (apuesta.estado_pago or "").strip(),
                         "pronostico": pronostico,
                     }
-                )
+            )
 
         for partido in partidos:
+            visibles_en_partido = pronosticos_visibles or bool(estado_partidos.get(partido.id, {}).get("ya_inicio"))
             filas = sorted(
                 filas_por_partido.get(partido.id, []),
                 key=lambda fila: (fila["usuario"].id, fila["pronostico"].id),
@@ -81,6 +91,7 @@ def detalle(jornada_id):
                 {
                     "partido": partido,
                     "filas": filas,
+                    "visible": visibles_en_partido,
                 }
             )
 
@@ -89,6 +100,7 @@ def detalle(jornada_id):
         jornada=jornada,
         partidos=partidos,
         pronosticos_visibles=pronosticos_visibles,
+        pronosticos_parciales=pronosticos_parciales,
         pronosticos_por_partido=pronosticos_por_partido,
-        usa_resultado_final_eliminatoria=jornada_es_16avos(jornada),
+        usa_resultado_final_eliminatoria=jornada_es_fase_eliminatoria(jornada),
     )
