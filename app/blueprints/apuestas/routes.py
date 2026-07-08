@@ -4,8 +4,10 @@ from sqlalchemy import func, or_
 
 from app.blueprints.apuestas import apuestas_bp
 from app.constants import (
+    GRUPO_4TOS_NOMBRE,
     GRUPO_16AVOS_NOMBRE,
     GRUPO_8VOS_NOMBRE,
+    JORNADA_4TOS_NOMBRE,
     JORNADA_16AVOS_NOMBRE,
     JORNADA_8VOS_NOMBRE,
 )
@@ -21,6 +23,7 @@ from app.utils.apuestas import (
     obtener_apuesta_usuario_jornada,
     jornada_esta_abierta,
     jornada_es_16avos,
+    jornada_es_4tos,
     jornada_es_8vos,
     jornada_es_fase_eliminatoria,
     obtener_estado_partidos,
@@ -237,6 +240,25 @@ def _obtener_jornada_16avos():
     return jornada
 
 
+def _obtener_jornada_4tos():
+    jornada = (
+        JornadaGrupo.query
+        .join(Grupo, Grupo.id == JornadaGrupo.grupo_id)
+        .filter(
+            or_(
+                func.lower(JornadaGrupo.nombre) == JORNADA_4TOS_NOMBRE.lower(),
+                func.lower(Grupo.nombre) == GRUPO_4TOS_NOMBRE.lower(),
+            )
+        )
+        .first()
+    )
+    if not jornada:
+        jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_4TOS_NOMBRE).first_or_404()
+    if not jornada_es_4tos(jornada):
+        raise AssertionError("La jornada encontrada no corresponde a 4tos de final.")
+    return jornada
+
+
 def _obtener_jornada_8vos():
     jornada = (
         JornadaGrupo.query
@@ -257,6 +279,8 @@ def _obtener_jornada_8vos():
 
 
 def _endpoint_lista_fase_eliminatoria(jornada):
+    if jornada_es_4tos(jornada):
+        return "apuestas.listar_4tos"
     if jornada_es_16avos(jornada):
         return "apuestas.listar_16avos"
     if jornada_es_8vos(jornada):
@@ -265,6 +289,8 @@ def _endpoint_lista_fase_eliminatoria(jornada):
 
 
 def _endpoint_partido_fase_eliminatoria(jornada):
+    if jornada_es_4tos(jornada):
+        return "apuestas.pronosticar_partido_4tos"
     if jornada_es_16avos(jornada):
         return "apuestas.pronosticar_partido_16avos"
     if jornada_es_8vos(jornada):
@@ -377,6 +403,13 @@ def listar_16avos():
     return _render_listado_fase_eliminatoria(jornada)
 
 
+@apuestas_bp.route("/4tos", methods=["GET"])
+@login_required
+def listar_4tos():
+    jornada = _obtener_jornada_4tos()
+    return _render_listado_fase_eliminatoria(jornada)
+
+
 @apuestas_bp.route("/8vos", methods=["GET"])
 @login_required
 def listar_8vos():
@@ -388,6 +421,13 @@ def listar_8vos():
 @login_required
 def pronosticar_partido_16avos(partido_id):
     jornada = _obtener_jornada_16avos()
+    return _render_partido_fase_eliminatoria(jornada, partido_id)
+
+
+@apuestas_bp.route("/4tos/partido/<int:partido_id>", methods=["GET", "POST"])
+@login_required
+def pronosticar_partido_4tos(partido_id):
+    jornada = _obtener_jornada_4tos()
     return _render_partido_fase_eliminatoria(jornada, partido_id)
 
 

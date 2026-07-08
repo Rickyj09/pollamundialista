@@ -40,6 +40,8 @@
     {% if jornada.esta_abierta_para_apuestas() %}
         {% if jornada.nombre == "16avos de final" or jornada.grupo.nombre == "16F" %}
             <a class="btn btn-primary" href="{{ url_for('apuestas.listar_16avos') }}">Registrar pronosticos</a>
+        {% elif jornada.nombre == "4tos de final" or jornada.grupo.nombre == "4F" %}
+            <a class="btn btn-primary" href="{{ url_for('apuestas.listar_4tos') }}">Registrar pronosticos</a>
         {% elif jornada.nombre == "8vos de final" or jornada.grupo.nombre == "8F" %}
             <a class="btn btn-primary" href="{{ url_for('apuestas.listar_8vos') }}">Registrar pronosticos</a>
         {% else %}
@@ -48,6 +50,8 @@
     {% else %}
         {% if jornada.nombre == "16avos de final" or jornada.grupo.nombre == "16F" %}
             <a class="btn btn-outline-primary" href="{{ url_for('apuestas.listar_16avos') }}">Ver pronosticos</a>
+        {% elif jornada.nombre == "4tos de final" or jornada.grupo.nombre == "4F" %}
+            <a class="btn btn-outline-primary" href="{{ url_for('apuestas.listar_4tos') }}">Ver pronosticos</a>
         {% elif jornada.nombre == "8vos de final" or jornada.grupo.nombre == "8F" %}
             <a class="btn btn-outline-primary" href="{{ url_for('apuestas.listar_8vos') }}">Ver pronosticos</a>
         {% else %}

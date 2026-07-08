@@ -2,6 +2,9 @@ from datetime import datetime, date
 from app.extensions import db
 from app.models import Grupo, Equipo, JornadaGrupo, Partido
 from app.constants import (
+    GRUPO_4TOS_NOMBRE,
+    JORNADA_4TOS_NOMBRE,
+    JORNADA_4TOS_NUMERO,
     GRUPO_8VOS_NOMBRE,
     JORNADA_8VOS_NOMBRE,
     JORNADA_8VOS_NUMERO,
@@ -118,6 +121,7 @@ def seed_inicial():
     grupo_h = upsert_grupo("H", "Grupo de Uruguay")
     grupo_j = upsert_grupo("J", "Grupo de Argentina")
     grupo_k = upsert_grupo("K", "Grupo de Colombia")
+    grupo_4f = upsert_grupo(GRUPO_4TOS_NOMBRE, "Fase eliminatoria - 4tos de final")
     grupo_8f = upsert_grupo(GRUPO_8VOS_NOMBRE, "Fase eliminatoria - 8vos de final")
     grupo_16f = upsert_grupo(GRUPO_16AVOS_NOMBRE, "Fase eliminatoria - 16avos de final")
 
@@ -206,6 +210,12 @@ def seed_inicial():
     jk1 = upsert_jornada(grupo_k, 1, datetime(2026, 6, 17, 12, 59, 0))
     jk2 = upsert_jornada(grupo_k, 2, datetime(2026, 6, 23, 12, 59, 0))
     jk3 = upsert_jornada(grupo_k, 3, datetime(2026, 6, 27, 19, 29, 0))
+    j4 = upsert_jornada(
+        grupo_4f,
+        JORNADA_4TOS_NUMERO,
+        datetime(2026, 7, 11, 19, 59, 0),
+        nombre=JORNADA_4TOS_NOMBRE,
+    )
     j8 = upsert_jornada(
         grupo_8f,
         JORNADA_8VOS_NUMERO,
@@ -317,6 +327,16 @@ def seed_inicial():
                    colombia, portugal, "Estadio Hard Rock", "Miami")
     upsert_partido(jk3, grupo_k, 72, to_date("2026-06-27"), "19:30", "19:30",
                    rd_congo, uzbekistan, "Estadio Mercedes-Benz", "Atlanta")
+
+    # 4tos de final
+    upsert_partido(j4, grupo_4f, 301, to_date("2026-07-09"), "15:00", "15:00",
+                   francia, marruecos, "Pendiente", "Pendiente")
+    upsert_partido(j4, grupo_4f, 302, to_date("2026-07-10"), "14:00", "14:00",
+                   espana, belgica, "Pendiente", "Pendiente")
+    upsert_partido(j4, grupo_4f, 303, to_date("2026-07-11"), "16:00", "16:00",
+                   noruega, inglaterra, "Pendiente", "Pendiente")
+    upsert_partido(j4, grupo_4f, 304, to_date("2026-07-11"), "20:00", "20:00",
+                   argentina, suiza, "Pendiente", "Pendiente")
 
     # 8vos de final
     upsert_partido(j8, grupo_8f, 201, to_date("2026-07-04"), "12:00", "12:00",

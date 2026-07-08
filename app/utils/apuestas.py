@@ -4,8 +4,10 @@ from app.extensions import db
 from app.models import Apuesta, PagoJornada, Pronostico
 from app.constants import (
     EQUIPOS_SUDAMERICANOS_NORMALIZADOS,
+    GRUPO_4TOS_NOMBRE,
     GRUPO_16AVOS_NOMBRE,
     GRUPO_8VOS_NOMBRE,
+    JORNADA_4TOS_NOMBRE,
     JORNADA_16AVOS_NOMBRE,
     JORNADA_8VOS_NOMBRE,
 )
@@ -13,10 +15,12 @@ from app.utils.timezone import now_ecuador_naive
 
 
 FASES_ELIMINATORIAS_NOMBRES = {
+    JORNADA_4TOS_NOMBRE.lower(): "4tos",
     JORNADA_16AVOS_NOMBRE.lower(): "16avos",
     JORNADA_8VOS_NOMBRE.lower(): "8vos",
 }
 FASES_ELIMINATORIAS_GRUPOS = {
+    GRUPO_4TOS_NOMBRE.lower(): "4tos",
     GRUPO_16AVOS_NOMBRE.lower(): "16avos",
     GRUPO_8VOS_NOMBRE.lower(): "8vos",
 }
@@ -40,6 +44,15 @@ def jornada_es_16avos(jornada):
     return (
         nombre_jornada_normalizado(jornada) == JORNADA_16AVOS_NOMBRE.lower()
         or nombre_grupo_jornada_normalizado(jornada) == GRUPO_16AVOS_NOMBRE.lower()
+    )
+
+
+def jornada_es_4tos(jornada):
+    if not jornada:
+        return False
+    return (
+        nombre_jornada_normalizado(jornada) == JORNADA_4TOS_NOMBRE.lower()
+        or nombre_grupo_jornada_normalizado(jornada) == GRUPO_4TOS_NOMBRE.lower()
     )
 
 
