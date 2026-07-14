@@ -6,9 +6,11 @@ from app.blueprints.apuestas import apuestas_bp
 from app.constants import (
     GRUPO_4TOS_NOMBRE,
     GRUPO_16AVOS_NOMBRE,
+    GRUPO_SEMIFINALES_NOMBRE,
     GRUPO_8VOS_NOMBRE,
     JORNADA_4TOS_NOMBRE,
     JORNADA_16AVOS_NOMBRE,
+    JORNADA_SEMIFINALES_NOMBRE,
     JORNADA_8VOS_NOMBRE,
 )
 from app.extensions import db
@@ -24,6 +26,7 @@ from app.utils.apuestas import (
     jornada_esta_abierta,
     jornada_es_16avos,
     jornada_es_4tos,
+    jornada_es_semifinales,
     jornada_es_8vos,
     jornada_es_fase_eliminatoria,
     obtener_estado_partidos,
@@ -278,9 +281,30 @@ def _obtener_jornada_8vos():
     return jornada
 
 
+def _obtener_jornada_semifinales():
+    jornada = (
+        JornadaGrupo.query
+        .join(Grupo, Grupo.id == JornadaGrupo.grupo_id)
+        .filter(
+            or_(
+                func.lower(JornadaGrupo.nombre) == JORNADA_SEMIFINALES_NOMBRE.lower(),
+                func.lower(Grupo.nombre) == GRUPO_SEMIFINALES_NOMBRE.lower(),
+            )
+        )
+        .first()
+    )
+    if not jornada:
+        jornada = JornadaGrupo.query.filter_by(nombre=JORNADA_SEMIFINALES_NOMBRE).first_or_404()
+    if not jornada_es_semifinales(jornada):
+        raise AssertionError("La jornada encontrada no corresponde a semifinales.")
+    return jornada
+
+
 def _endpoint_lista_fase_eliminatoria(jornada):
     if jornada_es_4tos(jornada):
         return "apuestas.listar_4tos"
+    if jornada_es_semifinales(jornada):
+        return "apuestas.listar_semifinales"
     if jornada_es_16avos(jornada):
         return "apuestas.listar_16avos"
     if jornada_es_8vos(jornada):
@@ -291,6 +315,8 @@ def _endpoint_lista_fase_eliminatoria(jornada):
 def _endpoint_partido_fase_eliminatoria(jornada):
     if jornada_es_4tos(jornada):
         return "apuestas.pronosticar_partido_4tos"
+    if jornada_es_semifinales(jornada):
+        return "apuestas.pronosticar_partido_semifinales"
     if jornada_es_16avos(jornada):
         return "apuestas.pronosticar_partido_16avos"
     if jornada_es_8vos(jornada):
@@ -330,14 +356,14 @@ def _render_partido_fase_eliminatoria(jornada, partido_id):
     apuesta = contexto["apuesta"]
     pronostico = contexto["pronosticos_dict"].get(partido.id)
     estado_partido = contexto["estado_partidos"].get(partido.id, {})
-    partido_cerrado = bool(estado_partido.get("ya_inicio"))
+    partido_cerrado = not bool(estado_partido.get("acepta_pronosticos"))
     pago_confirmado = usuario_tiene_pago_confirmado(current_user.id, jornada.id)
     estado_pago_apuesta = estado_apuesta_normalizado(apuesta.estado_pago if apuesta else None)
 
     if request.method == "POST":
         if partido_cerrado:
-            flash("Este partido ya inicio y no admite nuevos cambios.", "warning")
-            return redirect(url_for(_endpoint_partido_fase_eliminatoria(jornada), partido_id=partido.id))
+            flash("Este partido ya está cerrado y no admite cambios en el pronóstico.", "warning")
+            return redirect(url_for(_endpoint_lista_fase_eliminatoria(jornada)))
 
         if apuesta is None:
             apuesta = construir_apuesta(
@@ -376,7 +402,7 @@ def _render_partido_fase_eliminatoria(jornada, partido_id):
         contexto = construir_contexto_fase_eliminatoria(jornada, current_user.id)
         pronostico = contexto["pronosticos_dict"].get(partido.id)
         estado_partido = contexto["estado_partidos"].get(partido.id, {})
-        partido_cerrado = bool(estado_partido.get("ya_inicio"))
+        partido_cerrado = not bool(estado_partido.get("acepta_pronosticos"))
         estado_pago_apuesta = estado_apuesta_normalizado(apuesta.estado_pago if apuesta else None)
 
     return render_template(
@@ -417,6 +443,13 @@ def listar_8vos():
     return _render_listado_fase_eliminatoria(jornada)
 
 
+@apuestas_bp.route("/semifinales", methods=["GET"])
+@login_required
+def listar_semifinales():
+    jornada = _obtener_jornada_semifinales()
+    return _render_listado_fase_eliminatoria(jornada)
+
+
 @apuestas_bp.route("/16avos/partido/<int:partido_id>", methods=["GET", "POST"])
 @login_required
 def pronosticar_partido_16avos(partido_id):
@@ -435,4 +468,11 @@ def pronosticar_partido_4tos(partido_id):
 @login_required
 def pronosticar_partido_8vos(partido_id):
     jornada = _obtener_jornada_8vos()
+    return _render_partido_fase_eliminatoria(jornada, partido_id)
+
+
+@apuestas_bp.route("/semifinales/partido/<int:partido_id>", methods=["GET", "POST"])
+@login_required
+def pronosticar_partido_semifinales(partido_id):
+    jornada = _obtener_jornada_semifinales()
     return _render_partido_fase_eliminatoria(jornada, partido_id)

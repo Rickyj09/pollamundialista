@@ -5,11 +5,13 @@ from app.blueprints.resultados import resultados_bp
 from app.models import JornadaGrupo, PozoAcumulado, Partido, Grupo
 from app.constants import (
     GRUPO_4TOS_NOMBRE,
+    GRUPO_SEMIFINALES_NOMBRE,
     GRUPO_8VOS_NOMBRE,
     GRUPO_16AVOS_NOMBRE,
     JORNADA_2_JORNADA_GRUPO_IDS,
     JORNADA_3_JORNADA_GRUPO_IDS,
     JORNADA_4TOS_NOMBRE,
+    JORNADA_SEMIFINALES_NOMBRE,
     JORNADA_16AVOS_NOMBRE,
     JORNADA_8VOS_NOMBRE,
 )
@@ -165,6 +167,33 @@ def ranking_4tos():
         ranking_title="Ranking 4tos de final",
         ranking_description="Ranking independiente de 4tos de final. Solo suma la apuesta unica de esta fase.",
         ranking_scope_label="4tos de final",
+        ranking_scope_ids=jornada_ids,
+        mostrar_estado_pago=True,
+        estados_pago_por_usuario=estados_pago_por_usuario,
+    )
+
+
+@resultados_bp.route("/semifinales")
+def ranking_semifinales():
+    jornada = _buscar_jornada_por_fase(JORNADA_SEMIFINALES_NOMBRE, GRUPO_SEMIFINALES_NOMBRE)
+    jornada_ids = (jornada.id,) if jornada else ()
+    ranking = obtener_ranking_por_jornadas(jornada_ids)
+    estados_pago_por_usuario = {}
+
+    if jornada:
+        for apuesta in obtener_apuestas_ordenadas_jornada(jornada.id):
+            estados_pago_por_usuario[apuesta.usuario_id] = {
+                "estado": (apuesta.estado_pago or "").strip().lower(),
+                "pagada": apuesta_esta_pagada(apuesta.estado_pago),
+            }
+
+    return render_template(
+        "resultados/general_v2.html",
+        ranking=ranking,
+        pozo_final=None,
+        ranking_title="Ranking Semifinales",
+        ranking_description="Ranking independiente de semifinales. Solo suma Francia vs Espana e Inglaterra vs Argentina.",
+        ranking_scope_label="Semifinales",
         ranking_scope_ids=jornada_ids,
         mostrar_estado_pago=True,
         estados_pago_por_usuario=estados_pago_por_usuario,

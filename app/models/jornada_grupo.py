@@ -78,7 +78,7 @@ class JornadaGrupo(db.Model):
             if fecha_cierre and fecha_cierre <= ahora:
                 return False
             return True
-        return any(not partido.ya_inicio(ahora) for partido in self.partidos)
+        return any(partido.acepta_pronosticos(ahora) for partido in self.partidos)
 
     def pronosticos_son_visibles(self):
         return not self.esta_abierta_para_apuestas()

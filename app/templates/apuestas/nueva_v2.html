@@ -47,20 +47,20 @@
                 <br>
                 {{ partido.estadio or "" }}{% if partido.estadio and partido.ciudad %} - {% endif %}{{ partido.ciudad or "" }}
             </div>
-            {% if partido_estado and partido_estado.ya_inicio %}
+            {% if partido_estado and not partido_estado.acepta_pronosticos %}
             <div class="mobile-data-box" style="margin-bottom: 14px;">
                 <div class="mobile-label">Estado del pronostico</div>
-                <div class="mobile-value">Este partido ya inicio, pronostico cerrado.</div>
+                <div class="mobile-value">Este partido ya está cerrado para pronósticos.</div>
             </div>
             {% endif %}
             <div class="score-row">
                 <div class="match-score-field">
                     <label for="goles_local_{{ partido.id }}">{{ partido.equipo_local.nombre }}</label>
-                    <input id="goles_local_{{ partido.id }}" type="number" name="goles_local_{{ partido.id }}" min="0" inputmode="numeric" placeholder="0" {% if partido_estado and partido_estado.ya_inicio %}disabled{% endif %}>
+                    <input id="goles_local_{{ partido.id }}" type="number" name="goles_local_{{ partido.id }}" min="0" inputmode="numeric" placeholder="0" {% if partido_estado and not partido_estado.acepta_pronosticos %}disabled{% endif %}>
                 </div>
                 <div class="match-score-field">
                     <label for="goles_visitante_{{ partido.id }}">{{ partido.equipo_visitante.nombre }}</label>
-                    <input id="goles_visitante_{{ partido.id }}" type="number" name="goles_visitante_{{ partido.id }}" min="0" inputmode="numeric" placeholder="0" {% if partido_estado and partido_estado.ya_inicio %}disabled{% endif %}>
+                    <input id="goles_visitante_{{ partido.id }}" type="number" name="goles_visitante_{{ partido.id }}" min="0" inputmode="numeric" placeholder="0" {% if partido_estado and not partido_estado.acepta_pronosticos %}disabled{% endif %}>
                 </div>
             </div>
         </div>

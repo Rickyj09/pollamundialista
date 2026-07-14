@@ -5,6 +5,9 @@ from app.constants import (
     GRUPO_4TOS_NOMBRE,
     JORNADA_4TOS_NOMBRE,
     JORNADA_4TOS_NUMERO,
+    GRUPO_SEMIFINALES_NOMBRE,
+    JORNADA_SEMIFINALES_NOMBRE,
+    JORNADA_SEMIFINALES_NUMERO,
     GRUPO_8VOS_NOMBRE,
     JORNADA_8VOS_NOMBRE,
     JORNADA_8VOS_NUMERO,
@@ -122,6 +125,7 @@ def seed_inicial():
     grupo_j = upsert_grupo("J", "Grupo de Argentina")
     grupo_k = upsert_grupo("K", "Grupo de Colombia")
     grupo_4f = upsert_grupo(GRUPO_4TOS_NOMBRE, "Fase eliminatoria - 4tos de final")
+    grupo_sf = upsert_grupo(GRUPO_SEMIFINALES_NOMBRE, "Fase eliminatoria - semifinales")
     grupo_8f = upsert_grupo(GRUPO_8VOS_NOMBRE, "Fase eliminatoria - 8vos de final")
     grupo_16f = upsert_grupo(GRUPO_16AVOS_NOMBRE, "Fase eliminatoria - 16avos de final")
 
@@ -215,6 +219,12 @@ def seed_inicial():
         JORNADA_4TOS_NUMERO,
         datetime(2026, 7, 11, 19, 59, 0),
         nombre=JORNADA_4TOS_NOMBRE,
+    )
+    jsf = upsert_jornada(
+        grupo_sf,
+        JORNADA_SEMIFINALES_NUMERO,
+        datetime(2026, 7, 15, 13, 59, 0),
+        nombre=JORNADA_SEMIFINALES_NOMBRE,
     )
     j8 = upsert_jornada(
         grupo_8f,
@@ -337,6 +347,12 @@ def seed_inicial():
                    noruega, inglaterra, "Pendiente", "Pendiente")
     upsert_partido(j4, grupo_4f, 304, to_date("2026-07-11"), "20:00", "20:00",
                    argentina, suiza, "Pendiente", "Pendiente")
+
+    # Semifinales
+    upsert_partido(jsf, grupo_sf, 401, to_date("2026-07-14"), "14:00", "14:00",
+                   francia, espana, "Pendiente", "Pendiente")
+    upsert_partido(jsf, grupo_sf, 402, to_date("2026-07-15"), "14:00", "14:00",
+                   inglaterra, argentina, "Pendiente", "Pendiente")
 
     # 8vos de final
     upsert_partido(j8, grupo_8f, 201, to_date("2026-07-04"), "12:00", "12:00",

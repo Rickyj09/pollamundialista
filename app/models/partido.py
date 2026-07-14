@@ -1,6 +1,6 @@
 from datetime import datetime
 from app.extensions import db
-from app.utils.timezone import ECUADOR_TIMEZONE, now_ecuador_naive
+from app.utils.timezone import ECUADOR_TIMEZONE, as_ecuador_naive, now_ecuador_naive
 
 
 APP_TIMEZONE = ECUADOR_TIMEZONE
@@ -92,11 +92,19 @@ class Partido(db.Model):
         return datetime.combine(self.fecha_partido, hora)
 
     def ya_inicio(self, ahora=None):
-        ahora = ahora or now_ecuador_naive()
+        ahora = as_ecuador_naive(ahora) or now_ecuador_naive()
         inicio = self.inicio_programado()
         if inicio is None:
             return False
         return ahora >= inicio
+
+    def estado_normalizado(self):
+        return (self.estado or "").strip().lower()
+
+    def acepta_pronosticos(self, ahora=None):
+        if self.estado_normalizado() in {"cerrado", "jugado"}:
+            return False
+        return not self.ya_inicio(ahora)
 
     def __repr__(self):
         return f"<Partido {self.id}: {self.equipo_local_id} vs {self.equipo_visitante_id}>"

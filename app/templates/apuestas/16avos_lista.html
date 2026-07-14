@@ -70,9 +70,9 @@
                     <td>{{ partido.hora_est or partido.hora_local or "" }}</td>
                     <td>{{ partido.equipo_local.nombre }} vs {{ partido.equipo_visitante.nombre }}</td>
                     <td>
-                        {% if estado.ya_inicio %}
+                        {% if not estado.acepta_pronosticos %}
                             {% if pronostico %}
-                                Cerrado
+                                Pronóstico cerrado
                             {% else %}
                                 Cerrado sin pronostico
                             {% endif %}
@@ -90,7 +90,7 @@
                         {% endif %}
                     </td>
                     <td>
-                        {% if estado.ya_inicio %}
+                        {% if not estado.acepta_pronosticos %}
                             {% if pronostico %}
                                 <a class="btn btn-outline-primary" href="{{ url_for(endpoint_partido_fase, partido_id=partido.id) }}">Ver pronostico</a>
                             {% else %}
@@ -119,7 +119,7 @@
                     <div class="mobile-card-subtitle">Hora Ecuador {{ partido.hora_est or partido.hora_local or "" }}</div>
                 </div>
                 <div>
-                    {% if estado.ya_inicio %}
+                    {% if not estado.acepta_pronosticos %}
                         <span class="badge badge-closed">Cerrado</span>
                     {% elif pronostico %}
                         <span class="badge badge-open">Pronosticado</span>
@@ -133,8 +133,8 @@
                 <div class="mobile-data-box">
                     <div class="mobile-label">Estado</div>
                     <div class="mobile-value">
-                        {% if estado.ya_inicio %}
-                            {% if pronostico %}Cerrado{% else %}Cerrado sin pronostico{% endif %}
+                        {% if not estado.acepta_pronosticos %}
+                            {% if pronostico %}Pronóstico cerrado{% else %}Cerrado sin pronostico{% endif %}
                         {% elif pronostico %}
                             Pronosticado
                         {% else %}
@@ -154,7 +154,7 @@
                 </div>
             </div>
 
-            {% if estado.ya_inicio %}
+            {% if not estado.acepta_pronosticos %}
                 {% if pronostico %}
                     <a class="btn btn-outline-primary btn-block" href="{{ url_for(endpoint_partido_fase, partido_id=partido.id) }}">Ver pronostico</a>
                 {% else %}

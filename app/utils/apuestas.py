@@ -6,9 +6,11 @@ from app.constants import (
     EQUIPOS_SUDAMERICANOS_NORMALIZADOS,
     GRUPO_4TOS_NOMBRE,
     GRUPO_16AVOS_NOMBRE,
+    GRUPO_SEMIFINALES_NOMBRE,
     GRUPO_8VOS_NOMBRE,
     JORNADA_4TOS_NOMBRE,
     JORNADA_16AVOS_NOMBRE,
+    JORNADA_SEMIFINALES_NOMBRE,
     JORNADA_8VOS_NOMBRE,
 )
 from app.utils.timezone import now_ecuador_naive
@@ -16,11 +18,13 @@ from app.utils.timezone import now_ecuador_naive
 
 FASES_ELIMINATORIAS_NOMBRES = {
     JORNADA_4TOS_NOMBRE.lower(): "4tos",
+    JORNADA_SEMIFINALES_NOMBRE.lower(): "semifinales",
     JORNADA_16AVOS_NOMBRE.lower(): "16avos",
     JORNADA_8VOS_NOMBRE.lower(): "8vos",
 }
 FASES_ELIMINATORIAS_GRUPOS = {
     GRUPO_4TOS_NOMBRE.lower(): "4tos",
+    GRUPO_SEMIFINALES_NOMBRE.lower(): "semifinales",
     GRUPO_16AVOS_NOMBRE.lower(): "16avos",
     GRUPO_8VOS_NOMBRE.lower(): "8vos",
 }
@@ -62,6 +66,15 @@ def jornada_es_8vos(jornada):
     return (
         nombre_jornada_normalizado(jornada) == JORNADA_8VOS_NOMBRE.lower()
         or nombre_grupo_jornada_normalizado(jornada) == GRUPO_8VOS_NOMBRE.lower()
+    )
+
+
+def jornada_es_semifinales(jornada):
+    if not jornada:
+        return False
+    return (
+        nombre_jornada_normalizado(jornada) == JORNADA_SEMIFINALES_NOMBRE.lower()
+        or nombre_grupo_jornada_normalizado(jornada) == GRUPO_SEMIFINALES_NOMBRE.lower()
     )
 
 
@@ -166,6 +179,8 @@ def obtener_estado_partidos(partidos, ahora=None):
     return {
         partido.id: {
             "ya_inicio": partido.ya_inicio(ahora),
+            "acepta_pronosticos": partido.acepta_pronosticos(ahora),
+            "estado": partido.estado_normalizado(),
             "inicio": partido.inicio_programado(),
         }
         for partido in partidos
@@ -237,6 +252,14 @@ def leer_entero(form_data, key):
 
 def guardar_pronosticos_desde_form(apuesta, partidos, form_data, permitir_partidos_iniciados=False):
     pronosticos_dict = {pronostico.partido_id: pronostico for pronostico in apuesta.pronosticos}
+    partido_ids = [partido.id for partido in partidos]
+    if getattr(apuesta, "id", None) and partido_ids:
+        for pronostico in Pronostico.query.filter(
+            Pronostico.apuesta_id == apuesta.id,
+            Pronostico.partido_id.in_(partido_ids),
+        ).all():
+            pronosticos_dict[pronostico.partido_id] = pronostico
+
     estado_partidos = obtener_estado_partidos(partidos)
 
     creados = 0
@@ -244,12 +267,14 @@ def guardar_pronosticos_desde_form(apuesta, partidos, form_data, permitir_partid
     enviados = 0
 
     for partido in partidos:
-        partido_bloqueado = estado_partidos[partido.id]["ya_inicio"] and not permitir_partidos_iniciados
-        if partido_bloqueado:
-            continue
-
         goles_local = leer_entero(form_data, f"goles_local_{partido.id}")
         goles_visitante = leer_entero(form_data, f"goles_visitante_{partido.id}")
+        partido_abierto = estado_partidos[partido.id]["acepta_pronosticos"]
+        partido_bloqueado = not partido_abierto and not permitir_partidos_iniciados
+        if partido_bloqueado:
+            if goles_local is not None or goles_visitante is not None:
+                raise ValueError("Este partido ya está cerrado y no admite cambios en el pronóstico.")
+            continue
 
         if goles_local is None and goles_visitante is None:
             continue
@@ -271,15 +296,15 @@ def guardar_pronosticos_desde_form(apuesta, partidos, form_data, permitir_partid
             actualizados += 1
             continue
 
-        db.session.add(
-            Pronostico(
-                apuesta_id=apuesta.id,
-                partido_id=partido.id,
-                goles_local_pred=goles_local,
-                goles_visitante_pred=goles_visitante,
-                puntos_obtenidos=0,
-            )
+        pronostico = Pronostico(
+            apuesta_id=apuesta.id,
+            partido_id=partido.id,
+            goles_local_pred=goles_local,
+            goles_visitante_pred=goles_visitante,
+            puntos_obtenidos=0,
         )
+        db.session.add(pronostico)
+        pronosticos_dict[partido.id] = pronostico
         creados += 1
 
     return {
