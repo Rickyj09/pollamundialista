@@ -192,7 +192,7 @@ def ranking_semifinales():
         ranking=ranking,
         pozo_final=None,
         ranking_title="Ranking Semifinales",
-        ranking_description="Ranking independiente de semifinales. Solo suma Francia vs Espana e Inglaterra vs Argentina.",
+        ranking_description="Ranking independiente de semifinales, tercer puesto y final. Suma los cuatro partidos de la apuesta final.",
         ranking_scope_label="Semifinales",
         ranking_scope_ids=jornada_ids,
         mostrar_estado_pago=True,

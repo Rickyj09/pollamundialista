@@ -77,6 +77,7 @@ def upsert_jornada(grupo, numero_jornada, fecha_cierre, nombre=None):
     jornada.valor_premio_jornada = VALOR_PREMIO_JORNADA_OFICIAL
     jornada.valor_acumulado = VALOR_ACUMULADO_OFICIAL
     jornada.valor_utilidad = VALOR_UTILIDAD_OFICIAL
+    jornada.fecha_cierre = fecha_cierre
     return jornada
 
 
@@ -223,7 +224,7 @@ def seed_inicial():
     jsf = upsert_jornada(
         grupo_sf,
         JORNADA_SEMIFINALES_NUMERO,
-        datetime(2026, 7, 15, 13, 59, 0),
+        datetime(2026, 7, 19, 13, 59, 0),
         nombre=JORNADA_SEMIFINALES_NOMBRE,
     )
     j8 = upsert_jornada(
@@ -353,6 +354,10 @@ def seed_inicial():
                    francia, espana, "Pendiente", "Pendiente")
     upsert_partido(jsf, grupo_sf, 402, to_date("2026-07-15"), "14:00", "14:00",
                    inglaterra, argentina, "Pendiente", "Pendiente")
+    upsert_partido(jsf, grupo_sf, 403, to_date("2026-07-18"), "16:00", "16:00",
+                   francia, inglaterra, "Pendiente", "Pendiente")
+    upsert_partido(jsf, grupo_sf, 404, to_date("2026-07-19"), "14:00", "14:00",
+                   espana, argentina, "Pendiente", "Pendiente")
 
     # 8vos de final
     upsert_partido(j8, grupo_8f, 201, to_date("2026-07-04"), "12:00", "12:00",
@@ -407,4 +412,4 @@ def seed_inicial():
                    colombia, ghana, "Pendiente", "Pendiente")
 
     db.session.commit()
-    print("✅ Seed inicial cargado correctamente.")
+    print("Seed inicial cargado correctamente.")
